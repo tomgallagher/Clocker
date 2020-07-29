@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Table, Menu, Icon, Select } from 'semantic-ui-react';
 import { useTable, useSortBy, usePagination } from 'react-table';
+import { CSVLink } from 'react-csv';
 
 import './table.css';
 
@@ -8,6 +9,14 @@ export const SemanticTable = ({ headers, dataset, ...props }) => {
     //make sure we memo-ize the incoming data so we can work it
     const columns = useMemo(() => headers, [headers]);
     const data = useMemo(() => dataset, [dataset]);
+
+    const csvHeaders = headers.map((item) => item.Header);
+    const csvValues = dataset.map((item) =>
+        Object.values(item).filter((e) => {
+            return e === 0 || e;
+        })
+    );
+    csvValues.unshift(csvHeaders);
 
     // Use the state and functions returned from useTable to build your UI
     const {
@@ -117,6 +126,19 @@ export const SemanticTable = ({ headers, dataset, ...props }) => {
                             <Table.HeaderCell
                                 colSpan={visibleColumns.length.toString()}
                             >
+                                <Menu floated='left'>
+                                    <Menu.Item as='a'>
+                                        <CSVLink
+                                            data={csvValues}
+                                            onClick={() =>
+                                                console.log(csvValues)
+                                            }
+                                        >
+                                            CSV
+                                        </CSVLink>
+                                    </Menu.Item>
+                                </Menu>
+
                                 <Menu floated='right' pagination>
                                     <Menu.Item
                                         as='a'

@@ -20,3 +20,7 @@
 .tableWrapper .ui.selection.dropdown > .dropdown.icon {
     top: auto !important;
 }
+
+.tableWrapper .ui.left.floated.menu a {
+    color: black;
+}
