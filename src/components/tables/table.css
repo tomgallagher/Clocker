@@ -1,0 +1,22 @@
+.tableContainer {
+    display: block;
+    max-width: 100%;
+}
+.tableWrapper {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+/*we need this override to make a sortable table header wrap*/
+.tableWrapper > .ui.sortable.table thead th {
+    white-space: unset !important;
+}
+/*we need this override to prevent double bordering on the dropdown in pagination menu*/
+.tableWrapper .ui.selection.dropdown {
+    border: none !important;
+}
+/*we need this override to properly position the dropdown icon in pagination menu*/
+.tableWrapper .ui.selection.dropdown > .dropdown.icon {
+    top: auto !important;
+}
