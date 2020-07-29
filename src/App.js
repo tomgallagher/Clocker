@@ -15,9 +15,6 @@ function App() {
                 <Route path='/index.html'>
                     <Home />
                 </Route>
-                <Route path='/home'>
-                    <Home />
-                </Route>
                 <Route path='/settings'>
                     <Settings />
                 </Route>
@@ -26,6 +23,9 @@ function App() {
                 </Route>
                 <Route path='/history'>
                     <History />
+                </Route>
+                <Route path='*'>
+                    <Home />
                 </Route>
             </Switch>
         </>

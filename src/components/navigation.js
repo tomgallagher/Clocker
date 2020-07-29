@@ -18,8 +18,8 @@ export const Navigation = () => {
             </Menu.Item>
 
             <Menu.Item
-                name='home'
-                active={active === 'home'}
+                name='index.html'
+                active={active === 'index.html'}
                 onClick={handleItemClick}
             >
                 Home
