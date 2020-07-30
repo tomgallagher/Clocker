@@ -44,6 +44,7 @@ export const SemanticTable = ({ headers, dataset, ...props }) => {
 
     return (
         /* This is required to make the table full-width */
+
         <div className='tableContainer'>
             {/* This will make the table scrollable when it gets too small */}
             <div className='tableWrapper'>

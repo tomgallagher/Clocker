@@ -1,7 +1,8 @@
 import React from 'react';
-import { Container } from 'semantic-ui-react';
+import { Container, Divider } from 'semantic-ui-react';
 import { PageTitle } from './../components/pageTitle.js';
 import { PageTable } from './../components/results/pageTable';
+import { ConsoleList } from './../components/results/consoleList';
 
 export const Results = () => {
     return (
@@ -11,6 +12,8 @@ export const Results = () => {
             </Container>
             <Container fluid>
                 <PageTable />
+                <Divider hidden />
+                <ConsoleList />
             </Container>
         </>
     );

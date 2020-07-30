@@ -17,6 +17,7 @@
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.1",
     "react-table": "^7.3.2",
+    "react-virtualized-auto-sizer": "^1.0.2",
     "react-window": "^1.8.5",
     "rxjs": "^6.6.0",
     "semantic-ui-css": "^2.4.1",
@@ -44,6 +45,7 @@
     ]
   },
   "devDependencies": {
-    "namor": "^2.0.2"
+    "namor": "^2.0.2",
+    "random-sentence": "^1.0.4"
   }
 }
