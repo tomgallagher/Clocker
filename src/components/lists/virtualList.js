@@ -1,71 +1,63 @@
-import React, { createContext, useEffect, useRef, useContext } from 'react';
+import React, { createContext, useRef, useCallback } from 'react';
 import { VariableSizeList as List } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
+import { useWindowSize } from './../../hooks/useWindowResize';
+import { VirtualListRow } from './virtualListRow';
 
+//import our styling
 import './virtualList.css';
 
-const VirtualListContext = createContext({});
+//set up the context provider to share the setSize function and changes to window or container width
+export const VirtualListContext = createContext({});
 
-const VirtualListRow = ({ style, index, message }) => {
-    const { setSize, windowWidth } = useContext(VirtualListContext);
-    const root = useRef(null);
-
-    useEffect(() => {
-        setSize(index, root.current.getBoundingClientRect().height);
-        console.log(
-            `setting height of row ${index} to ${
-                root.current.getBoundingClientRect().height
-            }`
-        );
-    }, [index, setSize, windowWidth]);
-
-    return (
-        <div
-            ref={root}
-            className={index % 2 ? 'ListItemOdd' : 'ListItemEven'}
-            style={style}
-        >
-            {message}
-        </div>
-    );
-};
-
+//we have an incoming list ref so the parent can control the scrolling of the list
 export const VirtualList = ({ listRef, rowData }) => {
-    const sizeMap = React.useRef({});
-    const setSize = React.useCallback((index, size) => {
+    //we need to keep a memory of the row heights which we keep in a lookup object
+    const sizeMap = useRef({});
+    //then we have a function that we keep in memory that allows for the updating of the row height
+    const setSize = useCallback((index, size) => {
+        //spread operator to update object
         sizeMap.current = { ...sizeMap.current, [index]: size };
     }, []);
-    const getSize = React.useCallback(
-        (index) => sizeMap.current[index] || 50,
-        []
-    );
-    const windowWidth = window.document.documentElement.clientWidth;
+    //then we have the function to get the size of the row that we pass to the list
+    const getSize = useCallback((index) => {
+        return sizeMap.current[index] || 50;
+    }, []);
+    //then we have the custom hook that is listening for changes in window size
+    const [windowWidth] = useWindowSize();
 
     return (
-        /* This is required to make the virtual list autosize interact with flexbox */
-        <div className='listContainer'>
-            <VirtualListContext.Provider value={{ setSize, windowWidth }}>
-                <AutoSizer>
-                    {({ height, width }) => (
-                        <List
-                            className='List'
-                            height={height}
-                            itemCount={rowData.length}
-                            itemSize={getSize}
-                            width={width}
-                            ref={listRef}
-                        >
-                            {({ index, style }) => (
-                                <VirtualListRow
-                                    style={style}
-                                    index={index}
-                                    message={rowData[index]}
-                                />
-                            )}
-                        </List>
-                    )}
-                </AutoSizer>
-            </VirtualListContext.Provider>
-        </div>
+        <VirtualListContext.Provider value={{ setSize, windowWidth }}>
+            {/* This is required to make the virtual list autosize interact with flexbox parents */}
+            <div className='listContainer'>
+                {/* No point in showing the autosized list until we have data */}
+                {rowData.length > 0 && (
+                    <AutoSizer>
+                        {/* Auto-sizer provides height and width */}
+                        {({ height, width }) => (
+                            <List
+                                className='List'
+                                height={height}
+                                itemCount={rowData.length}
+                                itemSize={getSize}
+                                width={width}
+                                ref={listRef}
+                            >
+                                {({ index, style }) => (
+                                    // react-window work by absolutely positioning the list items (via an inline style), so don't forget to attach it to the DOM element you render!
+                                    <div style={style}>
+                                        {/* Other styles added at component level */}
+                                        <VirtualListRow
+                                            index={index}
+                                            message={rowData[index]}
+                                        />
+                                    </div>
+                                )}
+                            </List>
+                        )}
+                    </AutoSizer>
+                )}
+            </div>
+        </VirtualListContext.Provider>
     );
 };

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import randomSentence from 'random-sentence';
 import { useInterval } from './../../hooks/useInterval';
 import { VirtualList } from './../lists/virtualList';
@@ -8,18 +8,22 @@ export const ConsoleList = () => {
     const listRef = useRef(null);
     //for dev purposes we need to generate and save some data in state, in the end we will observe the console list in the store
     const [messages, setMessages] = useState([]);
+    useEffect(() => {
+        if (listRef.current) {
+            //VariableSizeList caches offsets and measurements for each index for performance purposes.
+            //This method clears that cached data for all items after (and including) the specified index.
+            //It should be called whenever a item's size changes.
+            listRef.current.resetAfterIndex(0);
+            // You can programatically scroll to a item within a List.
+            listRef.current.scrollToItem(messages.length - 1, 'end');
+        }
+    }, [messages]);
     //add a new message every second
     useInterval(() => {
         //generate the new console message
         const text = randomSentence(500, 1500);
         //then update the message array
         setMessages([...messages, text]);
-        //then scroll to the bottom of the list, if we have a reference
-        if (listRef.current) {
-            setTimeout(() => {
-                listRef.current.scrollToItem(messages.length, 'end');
-            }, 100);
-        }
     }, 2000);
 
     return <VirtualList listRef={listRef} rowData={messages}></VirtualList>;
