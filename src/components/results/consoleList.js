@@ -26,5 +26,5 @@ export const ConsoleList = () => {
         setMessages([...messages, text]);
     }, 2000);
 
-    return <VirtualList listRef={listRef} rowData={messages}></VirtualList>;
+    return <VirtualList listRef={listRef} rowData={messages} />;
 };

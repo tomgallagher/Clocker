@@ -122,77 +122,81 @@ export const SemanticTable = ({ headers, dataset, ...props }) => {
                         }
                     </Table.Body>
 
-                    <Table.Footer>
-                        <Table.Row>
-                            <Table.HeaderCell
-                                colSpan={visibleColumns.length.toString()}
-                            >
-                                <Menu floated='left'>
-                                    <Menu.Item as='a'>
-                                        <CSVLink
-                                            data={csvValues}
-                                            onClick={() =>
-                                                console.log(csvValues)
-                                            }
+                    {dataset.length > 10 && (
+                        <Table.Footer>
+                            <Table.Row>
+                                <Table.HeaderCell
+                                    colSpan={visibleColumns.length.toString()}
+                                >
+                                    <Menu floated='left'>
+                                        <Menu.Item as='a'>
+                                            <CSVLink
+                                                data={csvValues}
+                                                onClick={() =>
+                                                    console.log(csvValues)
+                                                }
+                                            >
+                                                CSV
+                                            </CSVLink>
+                                        </Menu.Item>
+                                    </Menu>
+
+                                    <Menu floated='right' pagination>
+                                        <Menu.Item
+                                            as='a'
+                                            icon
+                                            onClick={() => gotoPage(0)}
+                                            disabled={!canPreviousPage}
                                         >
-                                            CSV
-                                        </CSVLink>
-                                    </Menu.Item>
-                                </Menu>
+                                            <Icon name='chevron left' />
+                                            <Icon name='chevron left' />
+                                        </Menu.Item>
+                                        <Menu.Item
+                                            as='a'
+                                            icon
+                                            onClick={() => previousPage()}
+                                            disabled={!canPreviousPage}
+                                        >
+                                            <Icon name='chevron left' />
+                                        </Menu.Item>
+                                        <Menu.Item
+                                            as='a'
+                                            icon
+                                            onClick={() => nextPage()}
+                                            disabled={!canNextPage}
+                                        >
+                                            <Icon name='chevron right' />
+                                        </Menu.Item>
+                                        <Menu.Item
+                                            as='a'
+                                            icon
+                                            onClick={() =>
+                                                gotoPage(pageCount - 1)
+                                            }
+                                            disabled={!canNextPage}
+                                        >
+                                            <Icon name='chevron right' />
+                                            <Icon name='chevron right' />
+                                        </Menu.Item>
+                                        <Menu.Item as='a'>
+                                            Page {pageIndex + 1} of{' '}
+                                            {pageOptions.length}
+                                        </Menu.Item>
 
-                                <Menu floated='right' pagination>
-                                    <Menu.Item
-                                        as='a'
-                                        icon
-                                        onClick={() => gotoPage(0)}
-                                        disabled={!canPreviousPage}
-                                    >
-                                        <Icon name='chevron left' />
-                                        <Icon name='chevron left' />
-                                    </Menu.Item>
-                                    <Menu.Item
-                                        as='a'
-                                        icon
-                                        onClick={() => previousPage()}
-                                        disabled={!canPreviousPage}
-                                    >
-                                        <Icon name='chevron left' />
-                                    </Menu.Item>
-                                    <Menu.Item
-                                        as='a'
-                                        icon
-                                        onClick={() => nextPage()}
-                                        disabled={!canNextPage}
-                                    >
-                                        <Icon name='chevron right' />
-                                    </Menu.Item>
-                                    <Menu.Item
-                                        as='a'
-                                        icon
-                                        onClick={() => gotoPage(pageCount - 1)}
-                                        disabled={!canNextPage}
-                                    >
-                                        <Icon name='chevron right' />
-                                        <Icon name='chevron right' />
-                                    </Menu.Item>
-                                    <Menu.Item as='a'>
-                                        Page {pageIndex + 1} of{' '}
-                                        {pageOptions.length}
-                                    </Menu.Item>
-
-                                    <Select
-                                        item
-                                        upward={true}
-                                        text={`Show ${pageSize}`}
-                                        onChange={(e, { value }) => {
-                                            setPageSize(Number(value));
-                                        }}
-                                        options={paginationOptions}
-                                    />
-                                </Menu>
-                            </Table.HeaderCell>
-                        </Table.Row>
-                    </Table.Footer>
+                                        <Select
+                                            item
+                                            upward={true}
+                                            text={`Show ${pageSize}`}
+                                            onChange={(e, { value }) => {
+                                                setPageSize(Number(value));
+                                            }}
+                                            options={paginationOptions}
+                                        />
+                                    </Menu>
+                                </Table.HeaderCell>
+                            </Table.Row>
+                        </Table.Footer>
+                    )}
                 </Table>
             </div>
         </div>
