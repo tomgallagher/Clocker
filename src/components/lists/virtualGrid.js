@@ -52,7 +52,7 @@ export const VirtualGrid = ({ gridRef, rowData }) => {
                                 width={width}
                                 columnCount={rowData[0].length}
                                 columnWidth={(index) =>
-                                    Math.floor(width / rowData[0].length) - 1
+                                    Math.floor(width / rowData[0].length)
                                 }
                                 rowCount={rowData.length}
                                 rowHeight={getSize}

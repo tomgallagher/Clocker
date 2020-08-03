@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Label, Image } from 'semantic-ui-react';
+import { Label, Image, Button, Form } from 'semantic-ui-react';
 import raw from 'raw.macro';
 import psl from 'psl';
 import { VirtualGrid } from './../../components/lists/virtualGrid';
@@ -26,7 +26,7 @@ export const DataSelector = () => {
     const euroData = euroSource.map((item) => Object.values(item));
     const unitedStatesData = usSource.map((item) => Object.values(item));
 
-    const processedEuro = euroData.map((textArray) => [
+    const processedEuro = euroData.map((textArray, index) => [
         <Label
             className='urlShortName'
             as='a'
@@ -60,5 +60,26 @@ export const DataSelector = () => {
 
     const [data, setData] = useState(processedEuro);
 
-    return <VirtualGrid gridRef={gridRef} rowData={data} />;
+    return (
+        <Form style={{ height: '25vh' }}>
+            <Form.Field>
+                <label>Test Urls</label>
+                <VirtualGrid gridRef={gridRef} rowData={data} />
+            </Form.Field>
+            <Form.Field>
+                <label>Add Url</label>
+                <input placeholder='type url and press enter...' />
+            </Form.Field>
+            <Form.Field>
+                <label>Add Regional Top 100</label>
+                <Button.Group size='mini'>
+                    <Button>Europe</Button>
+                    <Button.Or />
+                    <Button>United States</Button>
+                    <Button.Or />
+                    <Button>Asia</Button>
+                </Button.Group>
+            </Form.Field>
+        </Form>
+    );
 };

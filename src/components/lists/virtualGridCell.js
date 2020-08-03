@@ -17,7 +17,11 @@ export const VirtualGridCell = memo(({ columnIndex, data, rowIndex }) => {
     const item = data[rowIndex][columnIndex];
 
     return (
-        <div ref={root} className='GridItem'>
+        <div
+            ref={root}
+            className='GridItem'
+            title={typeof item === 'string' ? item : null}
+        >
             {item}
         </div>
     );
