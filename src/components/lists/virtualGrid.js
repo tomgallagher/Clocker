@@ -2,6 +2,7 @@ import React, { createContext, useRef, useCallback } from 'react';
 import { VariableSizeGrid as Grid } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { useWindowSize } from './../../hooks/useWindowResize';
+import { PlaceHolder } from './../placeHolder';
 import { VirtualGridCell } from './virtualGridCell';
 
 //import our styling
@@ -42,7 +43,7 @@ export const VirtualGrid = ({ gridRef, rowData }) => {
             {/* This is required to make the virtual list autosize interact with flexbox parents */}
             <div className='gridContainer'>
                 {/* No point in showing the autosized list until we have data */}
-                {rowData.length > 0 && (
+                {rowData.length > 0 ? (
                     <AutoSizer onResize={onResize}>
                         {/* Auto-sizer provides height and width */}
                         {({ height, width }) => (
@@ -81,6 +82,12 @@ export const VirtualGrid = ({ gridRef, rowData }) => {
                             </Grid>
                         )}
                     </AutoSizer>
+                ) : (
+                    <PlaceHolder
+                        iconName='keyboard outline'
+                        iconColour='grey'
+                        message='Add urls for test run'
+                    />
                 )}
             </div>
         </VirtualGridContext.Provider>

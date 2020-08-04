@@ -6,7 +6,7 @@ export const PageTitle = (props) => {
         <Header
             as='h2'
             content={props.title ? props.title : ''}
-            dividing
+            dividing={props.dividing}
             subheader={props.subtitle ? props.subtitle : ''}
         />
     );

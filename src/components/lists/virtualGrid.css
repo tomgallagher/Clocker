@@ -14,7 +14,7 @@
     color: rgba(0, 0, 0, 0.87);
     border-collapse: separate;
     border-spacing: 0;
-    border-top: 2px solid #1b1c1d;
+    border-top: 1px solid rgba(34, 36, 38, 0.4);
 }
 
 .GridItem {
