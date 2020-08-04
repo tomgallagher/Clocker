@@ -1,4 +1,4 @@
-export const SettingsLayouts = {
+export const DefaultSettingsLayouts = {
     // 12 columns
     lg: [
         { i: 'bandwidth', x: 0, y: 0, w: 3, h: 2, isBounded: true },

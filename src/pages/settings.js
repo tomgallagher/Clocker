@@ -1,15 +1,19 @@
 import React from 'react';
 import { Header, Container, Segment } from 'semantic-ui-react';
 import { Responsive, WidthProvider } from 'react-grid-layout';
+import { useStores } from './../hooks/useStores';
 import { PageTitle } from './../components/pageTitle';
-import { SettingsLayouts } from './../components/settings/settingsLayout';
+import { DefaultSettingsLayouts } from './../components/settings/settingsLayout';
 import { WebsiteSelector } from './../components/settings/websiteSelector';
 
 // <ResponsiveReactGridLayout> takes width to calculate positions on drag events.
 // WidthProvider can be used to automatically determine width upon initialization and window resize events.
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
-export const Settings = () => {
+export const SettingsPage = () => {
+    //get the settings to see if we have any saved layouts
+    const { Settings } = useStores();
+
     return (
         <>
             <Container text textAlign='center'>
@@ -22,7 +26,11 @@ export const Settings = () => {
             <Container fluid>
                 <ResponsiveGridLayout
                     className='layout'
-                    layouts={SettingsLayouts}
+                    layouts={
+                        Object.keys(Settings.settingsLayouts).length
+                            ? Settings.settingsLayouts
+                            : DefaultSettingsLayouts
+                    }
                     breakpoints={{
                         lg: 1200,
                         md: 996,

@@ -12,11 +12,18 @@ export class Settings {
     constructor() {
         //always use the default settings
         var defaults = {
+            //test settings
             websites: [],
             bandwidth: 10485760,
             latency: 40,
             pageIterations: 1,
             mobileEmulation: {},
+            customUrlLists: [],
+            //UI settings
+            sidebar: 'default',
+            showSidebar: false,
+            settingsLayouts: {},
+            resultsLayouts: {},
         };
 
         // create a new object with the defaults over-ridden by the options passed in, none in this case
@@ -47,5 +54,10 @@ decorate(Settings, {
     latency: observable,
     pageIterations: observable,
     mobileEmulation: observable,
+    customUrlLists: observable,
+    sidebar: observable,
+    showSidebar: observable,
+    settingsLayouts: observable,
+    resultsLayouts: observable,
     parsedWebsites: computed,
 });

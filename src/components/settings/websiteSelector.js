@@ -102,6 +102,20 @@ export const WebsiteSelector = observer(() => {
         }
     };
 
+    const handleLoadClick = () => {
+        runInAction(() => {
+            Settings.sidebar = 'loadUrls';
+            Settings.showSidebar = true;
+        });
+    };
+
+    const handleSaveClick = () => {
+        runInAction(() => {
+            Settings.sidebar = 'saveUrls';
+            Settings.showSidebar = true;
+        });
+    };
+
     return (
         <Form size='large' style={{ padding: '10px' }}>
             <Form.Field>
@@ -154,15 +168,31 @@ export const WebsiteSelector = observer(() => {
                 <Form.Field>
                     <label>Edit Page Entries</label>
                     <Segment textAlign='center'>
-                        <Button
-                            size='mini'
-                            color='black'
-                            type='button'
-                            name='clear'
-                            onClick={handleRegionClick}
-                        >
-                            Clear
-                        </Button>
+                        <Button.Group size='mini' color='black'>
+                            <Button
+                                type='button'
+                                name='load'
+                                onClick={handleLoadClick}
+                            >
+                                Load
+                            </Button>
+                            <Button.Or />
+                            <Button
+                                type='button'
+                                name='save'
+                                onClick={handleSaveClick}
+                            >
+                                Save
+                            </Button>
+                            <Button.Or />
+                            <Button
+                                type='button'
+                                name='clear'
+                                onClick={handleRegionClick}
+                            >
+                                Clear
+                            </Button>
+                        </Button.Group>
                     </Segment>
                 </Form.Field>
             </Form.Group>
