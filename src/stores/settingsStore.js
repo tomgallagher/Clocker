@@ -22,6 +22,7 @@ export class Settings {
             //UI settings
             sidebar: 'default',
             showSidebar: false,
+            themeBackground: null,
             settingsLayouts: {},
             resultsLayouts: {},
         };

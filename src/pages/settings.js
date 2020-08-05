@@ -5,6 +5,7 @@ import { useStores } from './../hooks/useStores';
 import { PageTitle } from './../components/pageTitle';
 import { DefaultSettingsLayouts } from './../components/settings/settingsLayout';
 import { WebsiteSelector } from './../components/settings/websiteSelector';
+import colors from './../components/charts/colorPalette.json';
 
 // <ResponsiveReactGridLayout> takes width to calculate positions on drag events.
 // WidthProvider can be used to automatically determine width upon initialization and window resize events.
@@ -45,7 +46,10 @@ export const SettingsPage = () => {
                     <div key='bandwidth'>
                         <Segment
                             textAlign='center'
-                            style={{ backgroundColor: 'rgba(0,0,50,.02)' }}
+                            style={{
+                                backgroundColor: colors.background,
+                                borderRadius: '0',
+                            }}
                         >
                             <Header as='h4' content='Bandwidth' />
                         </Segment>
@@ -54,7 +58,10 @@ export const SettingsPage = () => {
                     <div key='latency'>
                         <Segment
                             textAlign='center'
-                            style={{ backgroundColor: 'rgba(0,0,50,.02)' }}
+                            style={{
+                                backgroundColor: colors.background,
+                                borderRadius: '0',
+                            }}
                         >
                             <Header as='h4' content='Latency' />
                         </Segment>
@@ -63,7 +70,10 @@ export const SettingsPage = () => {
                     <div key='webPageSelector'>
                         <Segment
                             textAlign='center'
-                            style={{ backgroundColor: 'rgba(0,0,50,.02)' }}
+                            style={{
+                                backgroundColor: colors.background,
+                                borderRadius: '0',
+                            }}
                         >
                             <Header as='h4' content='Web Pages' />
                         </Segment>
@@ -72,7 +82,10 @@ export const SettingsPage = () => {
                     <div key='pageIterations'>
                         <Segment
                             textAlign='center'
-                            style={{ backgroundColor: 'rgba(0,0,50,.02)' }}
+                            style={{
+                                backgroundColor: colors.background,
+                                borderRadius: '0',
+                            }}
                         >
                             <Header as='h4' content='Page Iterations' />
                         </Segment>
@@ -81,7 +94,10 @@ export const SettingsPage = () => {
                     <div key='mobileEmulation'>
                         <Segment
                             textAlign='center'
-                            style={{ backgroundColor: 'rgba(0,0,50,.02)' }}
+                            style={{
+                                backgroundColor: colors.background,
+                                borderRadius: '0',
+                            }}
                         >
                             <Header as='h4' content='Mobile Emulation' />
                         </Segment>

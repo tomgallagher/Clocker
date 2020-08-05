@@ -4,6 +4,7 @@ import AutoSizer from 'react-virtualized-auto-sizer';
 import { useWindowSize } from './../../hooks/useWindowResize';
 import { PlaceHolder } from './../placeHolder';
 import { VirtualGridCell } from './virtualGridCell';
+import colors from './../charts/colorPalette.json';
 
 //import our styling
 import './virtualGrid.css';
@@ -87,6 +88,7 @@ export const VirtualGrid = ({ gridRef, rowData }) => {
                         iconName='keyboard outline'
                         iconColour='grey'
                         message='Add urls for test run'
+                        style={{ backgroundColor: colors.background }}
                     />
                 )}
             </div>
