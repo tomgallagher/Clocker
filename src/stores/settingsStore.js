@@ -14,7 +14,7 @@ export class Settings {
         var defaults = {
             //test settings
             websites: [],
-            bandwidth: 10485760,
+            bandwidth: 1.5,
             latency: 40,
             pageIterations: 1,
             mobileEmulation: {},

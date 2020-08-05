@@ -10,3 +10,38 @@
     border: 1px solid rgba(34, 36, 38, 0.4);
     border-radius: 0.28571429rem;
 }
+.internal-grid-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    height: 100%;
+}
+/* this works because there is always a header before the grid content */
+.internal-grid-content {
+    flex: 1;
+    overflow-y: auto;
+}
+/* then we want to space out the rows evenly and add some padding for elements with width:100%*/
+.internal-grid-content-rows {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    height: 100%;
+    padding: 10px;
+}
+/* then we want single rows done differently */
+.internal-grid-content-single-row {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    height: 100%;
+    padding: 10px;
+}
+/*then we multi-child items to spread in single rows */
+.internal-grid-content-single-row-spread {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+}

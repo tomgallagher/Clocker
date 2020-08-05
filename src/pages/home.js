@@ -7,8 +7,9 @@ export const Home = () => {
         <>
             <Container text textAlign='center'>
                 <PageTitle
-                    title='Browser Tester'
+                    title='Clocker'
                     subtitle='Start browser tests'
+                    dividing={true}
                 />
             </Container>
             <Container fluid>grid</Container>

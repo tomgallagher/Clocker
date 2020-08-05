@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
 
-    "name": "Browser Tester",
+    "name": "Clocker",
     "description": "Automated Testing of Browser Performance",
     "version": "0.0.1",
     "background": {

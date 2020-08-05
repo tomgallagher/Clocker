@@ -1,11 +1,16 @@
 import React from 'react';
-import { Header, Container, Segment } from 'semantic-ui-react';
+import { Container } from 'semantic-ui-react';
+import { runInAction } from 'mobx';
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import { useStores } from './../hooks/useStores';
 import { PageTitle } from './../components/pageTitle';
+import { GridItem } from './../components/gridItem';
 import { DefaultSettingsLayouts } from './../components/settings/settingsLayout';
+import { Bandwidth } from '../components/settings/bandwidth';
+import { Latency } from '../components/settings/latency';
 import { WebsiteSelector } from './../components/settings/websiteSelector';
-import colors from './../components/charts/colorPalette.json';
+import { PageIterations } from './../components/settings/pageIterations';
+import { MobileEmulation } from './../components/settings/mobileEmulation';
 
 // <ResponsiveReactGridLayout> takes width to calculate positions on drag events.
 // WidthProvider can be used to automatically determine width upon initialization and window resize events.
@@ -14,6 +19,11 @@ const ResponsiveGridLayout = WidthProvider(Responsive);
 export const SettingsPage = () => {
     //get the settings to see if we have any saved layouts
     const { Settings } = useStores();
+    //then we need to have a save action on the layout change
+    const handleLayoutChange = (currentLayout, allLayouts) => {
+        console.log(currentLayout);
+        runInAction(() => (Settings.settingsLayouts = allLayouts));
+    };
 
     return (
         <>
@@ -27,6 +37,7 @@ export const SettingsPage = () => {
             <Container fluid>
                 <ResponsiveGridLayout
                     className='layout'
+                    draggableHandle='.draggableHandle'
                     layouts={
                         Object.keys(Settings.settingsLayouts).length
                             ? Settings.settingsLayouts
@@ -42,66 +53,32 @@ export const SettingsPage = () => {
                     cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
                     margin={[10, 10]}
                     containerPadding={[10, 10]}
+                    onLayoutChange={handleLayoutChange}
                 >
                     <div key='bandwidth'>
-                        <Segment
-                            textAlign='center'
-                            style={{
-                                backgroundColor: colors.background,
-                                borderRadius: '0',
-                            }}
-                        >
-                            <Header as='h4' content='Bandwidth' />
-                        </Segment>
-                        bandwidth settings widget
+                        <GridItem header='Bandwidth'>
+                            <Bandwidth />
+                        </GridItem>
                     </div>
                     <div key='latency'>
-                        <Segment
-                            textAlign='center'
-                            style={{
-                                backgroundColor: colors.background,
-                                borderRadius: '0',
-                            }}
-                        >
-                            <Header as='h4' content='Latency' />
-                        </Segment>
-                        latency settings widget
+                        <GridItem header='Latency'>
+                            <Latency />
+                        </GridItem>
                     </div>
                     <div key='webPageSelector'>
-                        <Segment
-                            textAlign='center'
-                            style={{
-                                backgroundColor: colors.background,
-                                borderRadius: '0',
-                            }}
-                        >
-                            <Header as='h4' content='Web Pages' />
-                        </Segment>
-                        <WebsiteSelector />
+                        <GridItem header='Web Pages'>
+                            <WebsiteSelector />
+                        </GridItem>
                     </div>
                     <div key='pageIterations'>
-                        <Segment
-                            textAlign='center'
-                            style={{
-                                backgroundColor: colors.background,
-                                borderRadius: '0',
-                            }}
-                        >
-                            <Header as='h4' content='Page Iterations' />
-                        </Segment>
-                        Page Iterations settings widget
+                        <GridItem header='Page Iterations'>
+                            <PageIterations />
+                        </GridItem>
                     </div>
                     <div key='mobileEmulation'>
-                        <Segment
-                            textAlign='center'
-                            style={{
-                                backgroundColor: colors.background,
-                                borderRadius: '0',
-                            }}
-                        >
-                            <Header as='h4' content='Mobile Emulation' />
-                        </Segment>
-                        mobileEmulation settings widget
+                        <GridItem header='Mobile Emulation'>
+                            <MobileEmulation header='Mobile Emulation' />
+                        </GridItem>
                     </div>
                 </ResponsiveGridLayout>
             </Container>

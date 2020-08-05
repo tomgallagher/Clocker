@@ -117,85 +117,90 @@ export const WebsiteSelector = observer(() => {
     };
 
     return (
-        <Form size='large' style={{ padding: '10px' }}>
-            <Form.Field>
-                <label>Test Pages</label>
-                <VirtualGrid gridRef={gridRef} rowData={processed} />
-            </Form.Field>
-            <Form.Field>
-                <Form.Input
-                    fluid
-                    label='Add Page Address'
-                    type='url'
-                    placeholder='type url and press enter...'
-                    value={urlInput}
-                    error={urlInputError}
-                    onChange={handleUrlChange}
-                    onKeyUp={handleUrlEnter}
-                />
-            </Form.Field>
-            <Form.Group widths='equal'>
+        <div className='internal-grid-content-single-row'>
+            <Form
+                size='large'
+                className='internal-grid-content-single-row-spread'
+            >
                 <Form.Field>
-                    <label>Add Regional Top 100 Sites</label>
-                    <Segment textAlign='center'>
-                        <Button.Group size='mini' color='black'>
-                            <Button
-                                type='button'
-                                name='eu'
-                                onClick={handleRegionClick}
-                            >
-                                Europe
-                            </Button>
-                            <Button.Or />
-                            <Button
-                                type='button'
-                                name='us'
-                                onClick={handleRegionClick}
-                            >
-                                United States
-                            </Button>
-                            <Button.Or />
-                            <Button
-                                type='button'
-                                name='asia'
-                                onClick={handleRegionClick}
-                            >
-                                Asia
-                            </Button>
-                        </Button.Group>
-                    </Segment>
+                    <label>Test Pages</label>
+                    <VirtualGrid gridRef={gridRef} rowData={processed} />
                 </Form.Field>
                 <Form.Field>
-                    <label>Edit Page Entries</label>
-                    <Segment textAlign='center'>
-                        <Button.Group size='mini' color='black'>
-                            <Button
-                                type='button'
-                                name='load'
-                                onClick={handleLoadClick}
-                            >
-                                Load
-                            </Button>
-                            <Button.Or />
-                            <Button
-                                type='button'
-                                name='save'
-                                onClick={handleSaveClick}
-                            >
-                                Save
-                            </Button>
-                            <Button.Or />
-                            <Button
-                                type='button'
-                                name='clear'
-                                onClick={handleRegionClick}
-                            >
-                                Clear
-                            </Button>
-                        </Button.Group>
-                    </Segment>
+                    <Form.Input
+                        fluid
+                        label='Add Page Address'
+                        type='url'
+                        placeholder='type url and press enter...'
+                        value={urlInput}
+                        error={urlInputError}
+                        onChange={handleUrlChange}
+                        onKeyUp={handleUrlEnter}
+                    />
                 </Form.Field>
-            </Form.Group>
-        </Form>
+                <Form.Group widths='equal'>
+                    <Form.Field>
+                        <label>Add Regional Top 100 Sites</label>
+                        <Segment textAlign='center'>
+                            <Button.Group size='mini' color='black'>
+                                <Button
+                                    type='button'
+                                    name='eu'
+                                    onClick={handleRegionClick}
+                                >
+                                    Europe
+                                </Button>
+                                <Button.Or />
+                                <Button
+                                    type='button'
+                                    name='us'
+                                    onClick={handleRegionClick}
+                                >
+                                    United States
+                                </Button>
+                                <Button.Or />
+                                <Button
+                                    type='button'
+                                    name='asia'
+                                    onClick={handleRegionClick}
+                                >
+                                    Asia
+                                </Button>
+                            </Button.Group>
+                        </Segment>
+                    </Form.Field>
+                    <Form.Field>
+                        <label>Edit Page Entries</label>
+                        <Segment textAlign='center'>
+                            <Button.Group size='mini' color='black'>
+                                <Button
+                                    type='button'
+                                    name='load'
+                                    onClick={handleLoadClick}
+                                >
+                                    Load
+                                </Button>
+                                <Button.Or />
+                                <Button
+                                    type='button'
+                                    name='save'
+                                    onClick={handleSaveClick}
+                                >
+                                    Save
+                                </Button>
+                                <Button.Or />
+                                <Button
+                                    type='button'
+                                    name='clear'
+                                    onClick={handleRegionClick}
+                                >
+                                    Clear
+                                </Button>
+                            </Button.Group>
+                        </Segment>
+                    </Form.Field>
+                </Form.Group>
+            </Form>
+        </div>
     );
 });

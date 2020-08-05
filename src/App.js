@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Sidebar, Container, Segment } from 'semantic-ui-react';
 import { Switch, Route } from 'react-router-dom';
 import { runInAction } from 'mobx';
