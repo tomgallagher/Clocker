@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { runInAction } from 'mobx';
-import { useStores } from './../../../hooks/useStores';
+import { runInAction, toJS } from 'mobx';
 import { Form, Message } from 'semantic-ui-react';
+import { v4 as uuidv4 } from 'uuid';
+import { useStores } from './../../../hooks/useStores';
 
 export const SaveCustomList = () => {
     const { Settings } = useStores();
@@ -16,7 +17,7 @@ export const SaveCustomList = () => {
     const handleNameInputChange = (event) => setNameInput(event.target.value);
 
     //keydown for detecting url input
-    const handleNameEnter = (event, { ...props }) => {
+    const handleNameEnter = (event) => {
         //get the input url
         const inputName = event.target.value.trim();
         //we only handle enter key press when we have some characters to change
@@ -25,12 +26,34 @@ export const SaveCustomList = () => {
             if (inputName.length > 0) {
                 //clear any remaining errors
                 setNameInputError(false);
+                //lets get a data to can append, looking like this "Wednesday_8/5/2020,_6:16_PM"
+                const date = new Date()
+                    //get a sensible readable format
+                    .toLocaleString('en', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'numeric',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: 'numeric',
+                    })
+                    //get rid of the comma
+                    .replace(',', '')
+                    //replace the spaces with underscore
+                    .split(' ')
+                    .join('_');
+                //then build our object
+                const customList = {
+                    name: `${nameInput}_${date}`,
+                    id: uuidv4(),
+                    websites: toJS(Settings.websites),
+                };
                 //then update our array
                 runInAction(
                     () =>
                         (Settings.customUrlLists = [
                             ...Settings.customUrlLists,
-                            '',
+                            customList,
                         ])
                 );
                 //then clear the url input box when we have a success
