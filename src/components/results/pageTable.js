@@ -17,15 +17,15 @@ export const PageTable = observer(() => {
         { Header: 'Data Usage (bytes)', accessor: 'dataUsageAverage' },
         { Header: 'Headers (ms)', accessor: 'headerTimingsAverage' },
         { Header: 'Image Load (bytes)', accessor: 'imageLoadAverage' },
-        { Header: 'Image Resources', accessor: 'imageRequestsAverage' },
+        { Header: 'Images', accessor: 'imageRequestsAverage' },
         { Header: 'Video Load (bytes)', accessor: 'mediaLoadAverage' },
-        { Header: 'Video Resources', accessor: 'mediaRequestsAverage' },
+        { Header: 'Videos', accessor: 'mediaRequestsAverage' },
         { Header: 'Font Load (bytes)', accessor: 'fontLoadAverage' },
-        { Header: 'Font Resources', accessor: 'fontRequestsAverage' },
+        { Header: 'Fonts', accessor: 'fontRequestsAverage' },
         { Header: 'JS Load (bytes)', accessor: 'scriptLoadAverage' },
-        { Header: 'JS Resources', accessor: 'scriptRequestsAverage' },
+        { Header: 'Scripts', accessor: 'scriptRequestsAverage' },
         { Header: 'CSS Load (bytes)', accessor: 'cssLoadAverage' },
-        { Header: 'CSS Resources', accessor: 'cssRequestsAverage' },
+        { Header: 'Stylesheets', accessor: 'cssRequestsAverage' },
     ];
 
     return (

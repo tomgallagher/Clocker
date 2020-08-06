@@ -241,5 +241,5 @@ SemanticTable.defaultProps = {
     //A table can be formatted to display complex structured data.
     structured: false,
     //A table can adjust its text alignment.
-    textAlign: 'left',
+    textAlign: 'center',
 };

@@ -6,11 +6,16 @@ import { useStores } from './../hooks/useStores';
 import { DefaultResultsLayouts } from './../components/results/resultsLayout';
 import { GridItem } from './../components/gridItem';
 import { PageTitle } from './../components/pageTitle.js';
-import { JobStats } from './../components/results/jobStats';
+import { HeaderLatency } from '../components/results/headerLatency';
+import { DataUsage } from '../components/results/dataUsage';
 import { Progress } from './../components/results/progress';
 import { PageTable } from './../components/results/pageTable';
 import { ConsoleList } from './../components/results/consoleList';
 import { Timings } from './../components/results/timings';
+
+//for testing only
+import randomSentence from 'random-sentence';
+import { useInterval } from './../hooks/useInterval';
 
 // <ResponsiveReactGridLayout> takes width to calculate positions on drag events.
 // WidthProvider can be used to automatically determine width upon initialization and window resize events.
@@ -21,7 +26,14 @@ export const Results = () => {
     const { JobStore, Settings } = useStores();
     //get the activeJob
     const activeJob = JobStore.jobs[JobStore.activeIndex];
-    console.log(toJS(activeJob));
+    //for testing the console - adds a new message every 2 seconds
+    useInterval(() => {
+        //generate the new console message
+        const text = randomSentence(500, 1500);
+        runInAction(() => activeJob.consoleMessages.push(text));
+        console.log(toJS(activeJob));
+    }, 2000);
+
     //then we need to have a save action on the layout change
     const handleLayoutChange = (currentLayout, allLayouts) => {
         console.log(currentLayout);
@@ -58,9 +70,19 @@ export const Results = () => {
                     containerPadding={[10, 10]}
                     onLayoutChange={handleLayoutChange}
                 >
-                    <div key='jobStats'>
-                        <GridItem header='Summary'>
-                            <JobStats />
+                    <div key='timings'>
+                        <GridItem header='Timings'>
+                            <Timings />
+                        </GridItem>
+                    </div>
+                    <div key='headerLatency'>
+                        <GridItem header='Header Latency'>
+                            <HeaderLatency />
+                        </GridItem>
+                    </div>
+                    <div key='dataUsage'>
+                        <GridItem header='Page Weight'>
+                            <DataUsage />
                         </GridItem>
                     </div>
                     <div key='progress'>
@@ -73,11 +95,7 @@ export const Results = () => {
                             <PageTable />
                         </GridItem>
                     </div>
-                    <div key='timings'>
-                        <GridItem header='Timings'>
-                            <Timings />
-                        </GridItem>
-                    </div>
+
                     <div key='console'>
                         <GridItem header='Activity Log'>
                             <ConsoleList />
