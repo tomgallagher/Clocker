@@ -43,13 +43,9 @@ export const SemanticTable = ({ headers, dataset, ...props }) => {
     );
 
     return (
-        /* This is required to make the table full-width */
-
         <div className='tableContainer'>
-            {/* This will make the table scrollable when it gets too small */}
             <div className='tableWrapper'>
-                {/* apply the table props */}
-                <Table {...getTableProps(props)} style={{ width: '100%' }}>
+                <Table {...getTableProps(props)}>
                     {/* build the table header */}
                     <Table.Header>
                         {
@@ -221,7 +217,7 @@ SemanticTable.defaultProps = {
     collapsing: false,
     //A table can be given a color to distinguish it from other tables.
     //red, orange, yellow, olive, green, teal, blue, violet, purple, pink, brown, grey, black
-    color: 'black',
+    color: '',
     //A table may sometimes need to be more compact to make more rows visible at a time.
     compact: false,
     //A table may be formatted to emphasize a first column that defines a rows content.

@@ -19,8 +19,12 @@
 }
 /* this works because there is always a header before the grid content */
 .internal-grid-content {
+    /* make sure it always fills the container for height */
     flex: 1;
-    overflow-y: auto;
+    /* and width */
+    width: 100%;
+    /*then any overflow gets scrolled*/
+    overflow: auto;
 }
 /* then we want to space out the rows evenly and add some padding for elements with width:100%*/
 .internal-grid-content-rows {
@@ -28,15 +32,18 @@
     flex-direction: column;
     justify-content: space-evenly;
     height: 100%;
-    padding: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
 }
 /* then we want single rows done differently */
 .internal-grid-content-single-row {
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    justify-content: space-around;
     height: 100%;
-    padding: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 10px;
 }
 /*then we multi-child items to spread in single rows */
 .internal-grid-content-single-row-spread {

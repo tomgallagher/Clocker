@@ -1,9 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
-import randomSentence from 'random-sentence';
-import { useInterval } from './../../hooks/useInterval';
+import { observer } from 'mobx-react';
+import { useStores } from './../../hooks/useStores';
 import { VirtualList } from './../lists/virtualList';
 
-export const ConsoleList = () => {
+//for testing
+import randomSentence from 'random-sentence';
+import { useInterval } from './../../hooks/useInterval';
+
+export const ConsoleList = observer(() => {
+    //get the settings to see if we have any saved layouts
+    const { JobStore } = useStores();
+    //get the activeJob
+    const activeJob = JobStore.jobs[JobStore.activeIndex];
+
     //we need a reference to the child list component so we can scroll
     const listRef = useRef(null);
     //for dev purposes we need to generate and save some data in state, in the end we will observe the console list in the store
@@ -26,5 +35,9 @@ export const ConsoleList = () => {
         setMessages([...messages, text]);
     }, 2000);
 
-    return <VirtualList listRef={listRef} rowData={messages} />;
-};
+    return (
+        <div className='internal-grid-content-single-row'>
+            <VirtualList listRef={listRef} rowData={messages} />
+        </div>
+    );
+});
