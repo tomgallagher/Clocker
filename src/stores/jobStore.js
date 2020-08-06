@@ -134,6 +134,15 @@ export class Job {
         const testPages = testData.map((page) => new Page(page));
         this.pages = [...this.pages, ...testPages];
     }
+
+    get pageTableData() {
+        return this.pages.map((page) => {
+            //we have no need for the following fields in the table data, and it causes problems in the CSV download, so we destructure to remove
+            const { jobId, id, createdAt, screenshot, ...partialPage } = page;
+            //then we return the partial page
+            return partialPage;
+        });
+    }
 }
 
 decorate(Job, {
@@ -155,33 +164,35 @@ decorate(Job, {
     fontLoadTotal: observable,
     cssLoadTotal: observable,
     scriptLoadTotal: observable,
+    //then we need to add the computed function
+    pageTableData: computed,
 });
 
 export class Page {
     constructor(options) {
-        //always use the default settings
+        //always use the default settings, important that these remain in same order as table headers for csv download
         var defaults = {
             url: 'N/A',
             jobId: 'N/A',
             id: uuidv4(),
             createdAt: Date.now(),
+            //and we can save screenshot of page
+            screenshot: '',
             //we always indicate average as we may run multiple iterations
             dclAverage: 0,
             completeAverage: 0,
             dataUsageAverage: 0,
             headerTimingsAverage: 0,
             imageLoadAverage: 0,
-            mediaLoadAverage: 0,
-            fontLoadAverage: 0,
-            cssLoadAverage: 0,
-            scriptLoadAverage: 0,
             imageRequestsAverage: 0,
+            mediaLoadAverage: 0,
             mediaRequestsAverage: 0,
+            fontLoadAverage: 0,
             fontRequestsAverage: 0,
-            cssRequestsAverage: 0,
+            scriptLoadAverage: 0,
             scriptRequestsAverage: 0,
-            //and we can save screenshot of page
-            screenshot: '',
+            cssLoadAverage: 0,
+            cssRequestsAverage: 0,
         };
 
         // create a new object with the defaults over-ridden by the options passed in, none in this case

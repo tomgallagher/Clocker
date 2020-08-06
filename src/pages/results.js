@@ -31,7 +31,6 @@ export const Results = () => {
         //generate the new console message
         const text = randomSentence(500, 1500);
         runInAction(() => activeJob.consoleMessages.push(text));
-        console.log(toJS(activeJob));
     }, 2000);
 
     //then we need to have a save action on the layout change

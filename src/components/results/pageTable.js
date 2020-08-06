@@ -9,6 +9,12 @@ export const PageTable = observer(() => {
     //get the activeJob
     const activeJob = JobStore.jobs[JobStore.activeIndex];
 
+    //then we have the custom row click
+    const handleRowClick = (row) => {
+        //here we can use the row info to search our pages and then provide further information, such as showing the screenshot in the sidebar
+        console.log(row);
+    };
+
     // columns are headers with the accessor, referring to the "key" in the data
     const columns = [
         { Header: 'Page Url', accessor: 'url' },
@@ -32,10 +38,12 @@ export const PageTable = observer(() => {
         <div className='internal-grid-content-single-row'>
             <SemanticTable
                 headers={columns}
-                dataset={activeJob.pages}
+                dataset={activeJob.pageTableData}
                 striped={true}
                 compact={true}
                 sortable={true}
+                selectable={true}
+                rowClick={handleRowClick}
             />
         </div>
     );

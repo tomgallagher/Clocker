@@ -5,12 +5,14 @@ import { CSVLink } from 'react-csv';
 
 import './table.css';
 
-export const SemanticTable = ({ headers, dataset, ...props }) => {
+export const SemanticTable = ({ headers, dataset, rowClick, ...props }) => {
     //make sure we memo-ize the incoming data so we can work it
     const columns = useMemo(() => headers, [headers]);
     const data = useMemo(() => dataset, [dataset]);
 
+    //the first line of the csv files is easy as we only need to grab the headers
     const csvHeaders = headers.map((item) => item.Header);
+    //the rest needs to be filtered for presence, allowing zeros
     const csvValues = dataset.map((item) =>
         Object.values(item).filter((e) => {
             return e === 0 || e;
@@ -95,7 +97,10 @@ export const SemanticTable = ({ headers, dataset, ...props }) => {
                                 prepareRow(row);
                                 return (
                                     // Apply the row props
-                                    <Table.Row {...row.getRowProps()}>
+                                    <Table.Row
+                                        {...row.getRowProps()}
+                                        onClick={() => rowClick(row.original)}
+                                    >
                                         {
                                             // Loop over the rows cells
                                             row.cells.map((cell) => {
@@ -242,4 +247,6 @@ SemanticTable.defaultProps = {
     structured: false,
     //A table can adjust its text alignment.
     textAlign: 'center',
+    //then we have the row click handler as empty function by default
+    rowClick: () => {},
 };
