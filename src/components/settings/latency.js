@@ -28,7 +28,7 @@ export const Latency = observer(() => {
                 <Popup.Header>Latency Throttling</Popup.Header>
                 <Popup.Content>
                     Change state to add additional latency into all resource
-                    request, in milliseconds
+                    requests, in milliseconds
                 </Popup.Content>
             </Popup>
 

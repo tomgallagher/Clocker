@@ -24,7 +24,7 @@ export const WebsiteSelector = observer(() => {
     //we need state for form input errors
     const [urlInputError, setUrlInputError] = useState(false);
     //then parse the current parsed websites computed value to display
-    const processed = Settings.parsedWebsites.map((parsed, index) => [
+    const processed = Settings.parsedWebsites.map((parsed) => [
         <Label
             className='urlShortName'
             as='a'
@@ -57,6 +57,7 @@ export const WebsiteSelector = observer(() => {
     }, [processed]);
     //buttons for changing regions
     const handleRegionClick = (e, { name }) => {
+        //then load the right regional sites
         switch (name) {
             case 'eu':
                 runInAction(() => (Settings.websites = [...euroSource]));
@@ -78,7 +79,7 @@ export const WebsiteSelector = observer(() => {
     const handleUrlChange = (event) => setUrlInput(event.target.value);
 
     //keydown for detecting url input
-    const handleUrlEnter = (event, { ...props }) => {
+    const handleUrlEnter = (event) => {
         //get the input url
         const inputUrl = event.target.value.trim();
         //we only handle enter key press when we have some characters to change
@@ -110,10 +111,12 @@ export const WebsiteSelector = observer(() => {
     };
 
     const handleSaveClick = () => {
-        runInAction(() => {
-            Settings.sidebar = 'saveUrls';
-            Settings.showSidebar = true;
-        });
+        if (Settings.websites.length !== 0) {
+            runInAction(() => {
+                Settings.sidebar = 'saveUrls';
+                Settings.showSidebar = true;
+            });
+        }
     };
 
     return (
@@ -170,7 +173,7 @@ export const WebsiteSelector = observer(() => {
                         </Segment>
                     </Form.Field>
                     <Form.Field>
-                        <label>Edit Page Entries</label>
+                        <label>Manage Test Pages</label>
                         <Segment textAlign='center'>
                             <Button.Group size='mini' color='black'>
                                 <Button
