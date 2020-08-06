@@ -8,7 +8,7 @@ import { GridItem } from './../components/gridItem';
 import { PageTitle } from './../components/pageTitle.js';
 import { HeaderLatency } from '../components/results/headerLatency';
 import { DataUsage } from '../components/results/dataUsage';
-import { Progress } from './../components/results/progress';
+import { ProgressBar } from './../components/results/progress';
 import { PageTable } from './../components/results/pageTable';
 import { ConsoleList } from './../components/results/consoleList';
 import { Timings } from './../components/results/timings';
@@ -87,7 +87,7 @@ export const Results = () => {
                     </div>
                     <div key='progress'>
                         <GridItem header='Progress'>
-                            <Progress />
+                            <ProgressBar />
                         </GridItem>
                     </div>
                     <div key='pageTable'>
