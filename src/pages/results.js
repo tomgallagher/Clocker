@@ -12,6 +12,8 @@ import { ProgressBar } from './../components/results/progress';
 import { PageTable } from './../components/results/pageTable';
 import { ConsoleList } from './../components/results/consoleList';
 import { Timings } from './../components/results/timings';
+import { LoadChart } from '../components/charts/loadChart';
+import { RequestChart } from '../components/charts/requestChart';
 
 //for testing only
 import randomSentence from 'random-sentence';
@@ -94,10 +96,19 @@ export const Results = () => {
                             <PageTable />
                         </GridItem>
                     </div>
-
                     <div key='console'>
                         <GridItem header='Activity Log'>
                             <ConsoleList />
+                        </GridItem>
+                    </div>
+                    <div key='loadChart'>
+                        <GridItem header='Total Resource Loads'>
+                            <LoadChart />
+                        </GridItem>
+                    </div>
+                    <div key='requestChart'>
+                        <GridItem header='Average Resource Requests'>
+                            <RequestChart />
                         </GridItem>
                     </div>
                 </ResponsiveGridLayout>

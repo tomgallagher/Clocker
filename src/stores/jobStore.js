@@ -12,6 +12,7 @@ import {
     RoundedAverageMegaBytes,
     TotalMegaBytes,
 } from './../utils/arrayFunctions';
+import ColorPalette from './../components/charts/colorPalette.json';
 
 //for testing purposes
 import { makeData } from './../__test__/makeData';
@@ -143,6 +144,56 @@ export class Job {
             return partialPage;
         });
     }
+
+    get resourceLoadData() {
+        return {
+            datasets: [
+                {
+                    data: [
+                        this.cssLoadTotal,
+                        this.scriptLoadTotal,
+                        this.fontLoadTotal,
+                        this.imageLoadTotal,
+                        this.mediaLoadTotal,
+                    ],
+                    backgroundColor: [
+                        ColorPalette.deepsea,
+                        ColorPalette.limestone,
+                        ColorPalette.sand,
+                        ColorPalette.mushroom,
+                        ColorPalette.fawn,
+                    ],
+                    label: 'Total Resource Loads',
+                },
+            ],
+            labels: ['Stylesheets', 'Scripts', 'Fonts', 'Images', 'Videos'],
+        };
+    }
+
+    get requestData() {
+        return {
+            datasets: [
+                {
+                    data: [
+                        this.cssRequestsAverage,
+                        this.scriptRequestsAverage,
+                        this.fontRequestsAverage,
+                        this.imageRequestsAverage,
+                        this.mediaRequestsAverage,
+                    ],
+                    backgroundColor: [
+                        ColorPalette.deepsea,
+                        ColorPalette.limestone,
+                        ColorPalette.sand,
+                        ColorPalette.mushroom,
+                        ColorPalette.fawn,
+                    ],
+                    label: 'Average Requests',
+                },
+            ],
+            labels: ['Stylesheets', 'Scripts', 'Fonts', 'Images', 'Videos'],
+        };
+    }
 }
 
 decorate(Job, {
@@ -166,6 +217,7 @@ decorate(Job, {
     scriptLoadTotal: observable,
     //then we need to add the computed function
     pageTableData: computed,
+    resourceLoadData: computed,
 });
 
 export class Page {

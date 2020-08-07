@@ -249,7 +249,8 @@ SemanticTable.defaultProps = {
     //A table may allow a user to sort contents by clicking on a table header.
     sortable: false,
     //A table can specify how it stacks table content responsively.
-    stackable: true,
+    stackable: false,
+    unstackable: true,
     //A table can stripe alternate rows of content with a darker color to increase contrast.
     striped: false,
     //A table can be formatted to display complex structured data.
