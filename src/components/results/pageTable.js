@@ -44,6 +44,7 @@ export const PageTable = observer(() => {
                 sortable={true}
                 selectable={true}
                 rowClick={handleRowClick}
+                mostRecent={true}
             />
         </div>
     );

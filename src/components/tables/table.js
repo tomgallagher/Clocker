@@ -1,11 +1,17 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { Table, Menu, Icon, Select } from 'semantic-ui-react';
 import { useTable, useSortBy, usePagination } from 'react-table';
 import { CSVLink } from 'react-csv';
 
 import './table.css';
 
-export const SemanticTable = ({ headers, dataset, rowClick, ...props }) => {
+export const SemanticTable = ({
+    headers,
+    dataset,
+    rowClick,
+    mostRecent,
+    ...props
+}) => {
     //make sure we memo-ize the incoming data so we can work it
     const columns = useMemo(() => headers, [headers]);
     const data = useMemo(() => dataset, [dataset]);
@@ -43,6 +49,9 @@ export const SemanticTable = ({ headers, dataset, rowClick, ...props }) => {
         useSortBy,
         usePagination
     );
+
+    //make sure we are always showing the most recent additions, if that's requested
+    useEffect(() => (mostRecent ? gotoPage(pageCount - 1) : null));
 
     return (
         <div className='tableContainer'>
@@ -249,4 +258,6 @@ SemanticTable.defaultProps = {
     textAlign: 'center',
     //then we have the row click handler as empty function by default
     rowClick: () => {},
+    //then we have a toggle for showing the most recent
+    mostRecent: false,
 };
