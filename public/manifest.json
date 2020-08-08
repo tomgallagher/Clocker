@@ -9,7 +9,7 @@
         "persistent": true
     },
     "browser_action": {
-        "default_title": "Browser Tester"
+        "default_title": "Automated Testing of Browser Performance"
     },
     "icons": {
         "16": "logo16.png",
