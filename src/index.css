@@ -1,3 +1,25 @@
+@import url('https://fonts.googleapis.com/css?family=PT+Serif+Caption:400,400i&display=swap');
+
+.themeWrapper {
+    color: rgba(0, 0, 0, 0.87);
+    position: relative;
+    z-index: 1;
+}
+
+.themeWrapper:after {
+    background: inherit;
+    bottom: 0;
+    content: '';
+    display: block;
+    height: 50%;
+    left: 0;
+    position: absolute;
+    right: 0;
+    transform: skewY(-4deg);
+    transform-origin: 100%;
+    z-index: -1;
+}
+
 .appContainer {
     min-height: 100vh;
     display: flex;
