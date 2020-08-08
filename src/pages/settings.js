@@ -10,7 +10,7 @@ import { Bandwidth } from '../components/settings/bandwidth';
 import { Latency } from '../components/settings/latency';
 import { WebsiteSelector } from './../components/settings/websiteSelector';
 import { PageIterations } from './../components/settings/pageIterations';
-import { MobileEmulation } from './../components/settings/mobileEmulation';
+import { WithCache } from './../components/settings/withCache';
 
 // <ResponsiveReactGridLayout> takes width to calculate positions on drag events.
 // WidthProvider can be used to automatically determine width upon initialization and window resize events.
@@ -75,9 +75,9 @@ export const SettingsPage = () => {
                             <PageIterations />
                         </GridItem>
                     </div>
-                    <div key='mobileEmulation'>
-                        <GridItem header='Mobile Emulation'>
-                            <MobileEmulation header='Mobile Emulation' />
+                    <div key='withCache'>
+                        <GridItem header='Cache Status'>
+                            <WithCache />
                         </GridItem>
                     </div>
                 </ResponsiveGridLayout>

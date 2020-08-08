@@ -5,26 +5,24 @@ import { CSVLink } from 'react-csv';
 
 import './table.css';
 
+//we want to split the table props from our other props, so we can just pass the table props to react-table
 export const SemanticTable = ({
     headers,
     dataset,
     rowClick,
     mostRecent,
+    filename,
     ...props
 }) => {
     //make sure we memo-ize the incoming data so we can work it
     const columns = useMemo(() => headers, [headers]);
     const data = useMemo(() => dataset, [dataset]);
 
-    //the first line of the csv files is easy as we only need to grab the headers
-    const csvHeaders = headers.map((item) => item.Header);
-    //the rest needs to be filtered for presence, allowing zeros
-    const csvValues = dataset.map((item) =>
-        Object.values(item).filter((e) => {
-            return e === 0 || e;
-        })
-    );
-    csvValues.unshift(csvHeaders);
+    //the first line of the csv files is easy as we only need to grab the headers, changing the properties
+    const csvHeaders = headers.map((item) => ({
+        label: item.Header,
+        key: item.accessor,
+    }));
 
     // Use the state and functions returned from useTable to build your UI
     const {
@@ -141,10 +139,9 @@ export const SemanticTable = ({
                                     <Menu floated='left'>
                                         <Menu.Item as='a'>
                                             <CSVLink
-                                                data={csvValues}
-                                                onClick={() =>
-                                                    console.log(csvValues)
-                                                }
+                                                data={data}
+                                                headers={csvHeaders}
+                                                filename={`${filename}.csv`}
                                             >
                                                 CSV
                                             </CSVLink>
@@ -261,4 +258,6 @@ SemanticTable.defaultProps = {
     rowClick: () => {},
     //then we have a toggle for showing the most recent
     mostRecent: false,
+    //then a default prop for filename
+    filename: 'table.csv',
 };

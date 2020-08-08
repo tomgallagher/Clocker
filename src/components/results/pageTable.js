@@ -5,7 +5,7 @@ import { SemanticTable } from './../../components/tables/table';
 
 export const PageTable = observer(() => {
     //get the settings to see if we have any saved layouts
-    const { JobStore } = useStores();
+    const { JobStore, Settings } = useStores();
     //get the activeJob
     const activeJob = JobStore.jobs[JobStore.activeIndex];
 
@@ -45,6 +45,7 @@ export const PageTable = observer(() => {
                 selectable={true}
                 rowClick={handleRowClick}
                 mostRecent={true}
+                filename={Settings.toString}
             />
         </div>
     );

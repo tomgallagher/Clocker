@@ -7,6 +7,7 @@ import {
     computed,
 } from 'mobx';
 import psl from 'psl';
+import { getDateString } from './../utils/strings';
 
 export class Settings {
     constructor() {
@@ -17,7 +18,7 @@ export class Settings {
             bandwidth: 1.5,
             latency: 40,
             pageIterations: 1,
-            mobileEmulation: {},
+            withCache: false,
             customUrlLists: [],
             //UI settings
             sidebar: 'default',
@@ -46,6 +47,19 @@ export class Settings {
                 url: urlObject.href,
             }));
     }
+
+    get toString() {
+        const selected = {
+            bandwidth: this.bandwidth,
+            latency: this.latency,
+            pageIterations: this.pageIterations,
+            withCache: this.withCache,
+        };
+        const settings = Object.entries(selected)
+            .map(([key, value]) => `${key}-${value}`)
+            .join('_');
+        return `${getDateString()}_${settings}`;
+    }
 }
 
 //then add the decorations to make the relevant features of the list observable
@@ -54,11 +68,12 @@ decorate(Settings, {
     bandwidth: observable,
     latency: observable,
     pageIterations: observable,
-    mobileEmulation: observable,
+    withCache: observable,
     customUrlLists: observable,
     sidebar: observable,
     showSidebar: observable,
     settingsLayouts: observable,
     resultsLayouts: observable,
     parsedWebsites: computed,
+    toString: computed,
 });

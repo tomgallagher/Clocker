@@ -55,3 +55,7 @@
 .ui.progress.success .bar {
     background-color: #058825 !important;
 }
+.ui.fitted.toggle.checkbox input:checked ~ .box:before,
+.ui.fitted.toggle.checkbox input:checked ~ label:before {
+    background-color: #1b1c1d !important;
+}
