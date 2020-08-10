@@ -1,5 +1,13 @@
 import React from 'react';
-import { Segment, Header, Grid, Reveal, Image, Icon } from 'semantic-ui-react';
+import {
+    Segment,
+    Header,
+    Grid,
+    Reveal,
+    Image,
+    Icon,
+    Divider,
+} from 'semantic-ui-react';
 
 export const Cards = () => {
     return (
@@ -35,10 +43,16 @@ export const Cards = () => {
                                 </div>
                             </Reveal.Content>
                             <Reveal.Content hidden style={{ width: '100%' }}>
-                                <Image
-                                    src='https://react.semantic-ui.com/images/avatar/large/chris.jpg'
-                                    size='large'
-                                />
+                                <div className='reveal-hidden-content'>
+                                    <p className='reveal-hidden-content-item'>
+                                        Enter custom urls to test or use our
+                                        regional default lists
+                                    </p>
+                                    <p className='reveal-hidden-content-item'>
+                                        Adjust bandwidth, latency, page
+                                        iterations and cache behaviour
+                                    </p>
+                                </div>
                             </Reveal.Content>
                         </Reveal>
                     </Grid.Column>
@@ -53,10 +67,16 @@ export const Cards = () => {
                                 </div>
                             </Reveal.Content>
                             <Reveal.Content hidden style={{ width: '100%' }}>
-                                <Image
-                                    src='https://react.semantic-ui.com/images/avatar/large/chris.jpg'
-                                    size='large'
-                                />
+                                <div className='reveal-hidden-content'>
+                                    <p className='reveal-hidden-content-item'>
+                                        View live progress and summary
+                                        statistics as test runs
+                                    </p>
+                                    <p className='reveal-hidden-content-item'>
+                                        Monitor activity log for test messages,
+                                        including page errors
+                                    </p>
+                                </div>
                             </Reveal.Content>
                         </Reveal>
                     </Grid.Column>
@@ -71,10 +91,16 @@ export const Cards = () => {
                                 </div>
                             </Reveal.Content>
                             <Reveal.Content hidden style={{ width: '100%' }}>
-                                <Image
-                                    src='https://react.semantic-ui.com/images/avatar/large/chris.jpg'
-                                    size='large'
-                                />
+                                <div className='reveal-hidden-content'>
+                                    <p className='reveal-hidden-content-item'>
+                                        Select saved tests from history to
+                                        export results
+                                    </p>
+                                    <p className='reveal-hidden-content-item'>
+                                        Test data available as csv or pdf
+                                        exports to share
+                                    </p>
+                                </div>
                             </Reveal.Content>
                         </Reveal>
                     </Grid.Column>
