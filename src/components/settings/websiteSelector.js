@@ -65,9 +65,6 @@ export const WebsiteSelector = observer(() => {
             case 'us':
                 runInAction(() => (Settings.websites = [...usSource]));
                 break;
-            case 'asia':
-                runInAction(() => (Settings.websites = []));
-                break;
             case 'clear':
                 runInAction(() => (Settings.websites = []));
                 break;
@@ -160,14 +157,6 @@ export const WebsiteSelector = observer(() => {
                                     onClick={handleRegionClick}
                                 >
                                     United States
-                                </Button>
-                                <Button.Or />
-                                <Button
-                                    type='button'
-                                    name='asia'
-                                    onClick={handleRegionClick}
-                                >
-                                    Asia
                                 </Button>
                             </Button.Group>
                         </Segment>
