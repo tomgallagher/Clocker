@@ -17,6 +17,7 @@ import { RequestChart } from '../components/charts/requestChart';
 
 //for testing only
 import randomSentence from 'random-sentence';
+import { newPage } from './../__test__/makeData';
 import { useInterval } from './../hooks/useInterval';
 import { SendChromeMessage } from './../utils/chromeFunctions';
 
@@ -33,8 +34,10 @@ export const Results = () => {
     useInterval(() => {
         //generate the new console message
         const text = randomSentence(500, 1500);
-        runInAction(() => activeJob.consoleMessages.push(text));
         SendChromeMessage({ command: 'forwardConsoleMessage', message: text });
+        //generate the new page item
+        const page = newPage();
+        SendChromeMessage({ command: 'forwardPageData', payload: page });
     }, 2000);
 
     //then we need to have a save action on the layout change
@@ -48,7 +51,9 @@ export const Results = () => {
             <Container text textAlign='center'>
                 <PageTitle
                     title='Results'
-                    subtitle='View test job results'
+                    subtitle={`Started: ${new Date(
+                        activeJob.createdAt
+                    ).toLocaleString()}`}
                     dividing={false}
                 />
             </Container>

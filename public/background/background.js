@@ -13,6 +13,12 @@ chrome.runtime.onMessage.addListener((request) => {
                 message: request.message,
             });
             return true;
+        case 'forwardPageData':
+            chrome.runtime.sendMessage({
+                command: 'incomingPageData',
+                payload: request.payload,
+            });
+            return true;
         default:
             console.log('Unrecognised Message Command');
     }

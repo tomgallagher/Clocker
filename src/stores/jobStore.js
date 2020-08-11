@@ -1,4 +1,4 @@
-import { observable, autorun, toJS, decorate, reaction, computed } from 'mobx';
+import { observable, autorun, decorate, computed } from 'mobx';
 import { createMobxMessageListener } from './../utils/mobxFunctions';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -26,12 +26,30 @@ export class JobStore {
             requestProperty: 'message',
             initialState: 'default',
         });
+        this.pageEntries = createMobxMessageListener({
+            commandFilter: 'incomingPageData',
+            requestProperty: 'payload',
+            initialState: null,
+        });
+
         //then we use the more complex observables in autorun
         autorun(() => {
             //no need to activate on the first default value
             if (this.console.current() !== 'default') {
-                // printed everytime the console function receives a new message
-                console.log(this.console.current());
+                // push the new message into the active job console messages array every time we receive the message
+                this.jobs[this.activeIndex].consoleMessages.push(
+                    this.console.current()
+                );
+            }
+        });
+
+        autorun(() => {
+            //no need to activate on null value
+            if (this.pageEntries.current()) {
+                // push the new data into the active job pages array every time we receive the message
+                this.jobs[this.activeIndex].pages.push(
+                    this.pageEntries.current()
+                );
             }
         });
 
@@ -47,7 +65,6 @@ decorate(JobStore, {
     activeIndex: observable,
     isLoading: observable,
     isLoadError: observable,
-    console: observable,
 });
 
 export class Job {
@@ -61,7 +78,7 @@ export class Job {
             settings: {},
             consoleMessages: [],
             pages: [],
-            //the job must contain reporting stats on its contained pages, the average for the important indicators
+            //the job must contain reporting stats on its contained pages, the AVERAGE for the important indicators across all ITERATIONS
             dclAverage: 0,
             completeAverage: 0,
             dataUsageAverage: 0,
@@ -87,64 +104,60 @@ export class Job {
             this[prop] = opts[prop];
         });
 
-        //then each job needs to automatically update its reporting stats
-        reaction(
-            () => this.pages,
-            (pagesArray) => {
-                console.log('reaction: Autogenerating Job Reporting Stats');
-                //first we work out the averages
-                this.dclAverage = pagesArray
-                    .map((item) => item.dclAverage)
-                    .reduce(RoundedAverage, 0);
-                this.completeAverage = pagesArray
-                    .map((item) => item.completeAverage)
-                    .reduce(RoundedAverage, 0);
-                this.dataUsageAverage = pagesArray
-                    .map((item) => item.dataUsageAverage)
-                    .reduce(RoundedAverageMegaBytes, 0);
-                this.headerTimingsAverage = pagesArray
-                    .map((item) => item.headerTimingsAverage)
-                    .reduce(RoundedAverage, 0);
-                this.imageRequestsAverage = pagesArray
-                    .map((item) => item.imageRequestsAverage)
-                    .reduce(RoundedAverage, 0);
-                this.fontRequestsAverage = pagesArray
-                    .map((item) => item.fontRequestsAverage)
-                    .reduce(RoundedAverage, 0);
-                this.mediaRequestsAverage = pagesArray
-                    .map((item) => item.mediaRequestsAverage)
-                    .reduce(RoundedAverage, 0);
-                this.cssRequestsAverage = pagesArray
-                    .map((item) => item.cssRequestsAverage)
-                    .reduce(RoundedAverage, 0);
-                this.scriptRequestsAverage = pagesArray
-                    .map((item) => item.scriptRequestsAverage)
-                    .reduce(RoundedAverage, 0);
-                //then we work out the running totals
-                this.imageLoadTotal = pagesArray
-                    .map((item) => item.imageLoadAverage)
-                    .reduce(TotalMegaBytes, 0);
-                this.mediaLoadTotal = pagesArray
-                    .map((item) => item.mediaLoadAverage)
-                    .reduce(TotalMegaBytes, 0);
-                this.fontLoadTotal = pagesArray
-                    .map((item) => item.fontLoadAverage)
-                    .reduce(TotalMegaBytes, 0);
-                this.cssLoadTotal = pagesArray
-                    .map((item) => item.cssLoadAverage)
-                    .reduce(TotalMegaBytes, 0);
-                this.scriptLoadTotal = pagesArray
-                    .map((item) => item.scriptLoadAverage)
-                    .reduce(TotalMegaBytes, 0);
-                //and update the date
-                this.updatedAt = Date.now();
-            }
-        );
+        autorun(() => {
+            console.log('autorun: Autogenerating Job Reporting Stats');
+            //first we work out the averages
+            this.dclAverage = this.pages
+                .map((item) => item.dclAverage)
+                .reduce(RoundedAverage, 0);
+            this.completeAverage = this.pages
+                .map((item) => item.completeAverage)
+                .reduce(RoundedAverage, 0);
+            this.dataUsageAverage = this.pages
+                .map((item) => item.dataUsageAverage)
+                .reduce(RoundedAverageMegaBytes, 0);
+            this.headerTimingsAverage = this.pages
+                .map((item) => item.headerTimingsAverage)
+                .reduce(RoundedAverage, 0);
+            this.imageRequestsAverage = this.pages
+                .map((item) => item.imageRequestsAverage)
+                .reduce(RoundedAverage, 0);
+            this.fontRequestsAverage = this.pages
+                .map((item) => item.fontRequestsAverage)
+                .reduce(RoundedAverage, 0);
+            this.mediaRequestsAverage = this.pages
+                .map((item) => item.mediaRequestsAverage)
+                .reduce(RoundedAverage, 0);
+            this.cssRequestsAverage = this.pages
+                .map((item) => item.cssRequestsAverage)
+                .reduce(RoundedAverage, 0);
+            this.scriptRequestsAverage = this.pages
+                .map((item) => item.scriptRequestsAverage)
+                .reduce(RoundedAverage, 0);
+            //then we work out the running totals
+            this.imageLoadTotal = this.pages
+                .map((item) => item.imageLoadAverage)
+                .reduce(TotalMegaBytes, 0);
+            this.mediaLoadTotal = this.pages
+                .map((item) => item.mediaLoadAverage)
+                .reduce(TotalMegaBytes, 0);
+            this.fontLoadTotal = this.pages
+                .map((item) => item.fontLoadAverage)
+                .reduce(TotalMegaBytes, 0);
+            this.cssLoadTotal = this.pages
+                .map((item) => item.cssLoadAverage)
+                .reduce(TotalMegaBytes, 0);
+            this.scriptLoadTotal = this.pages
+                .map((item) => item.scriptLoadAverage)
+                .reduce(TotalMegaBytes, 0);
+            //and update the date
+            this.updatedAt = Date.now();
+        });
 
         //then for testing purposes we need to add some fake data
-        const testData = makeData(20);
-        const testPages = testData.map((page) => new Page(page));
-        this.pages = [...this.pages, ...testPages];
+        //const testData = makeData(20);
+        //const testPages = testData.map((page) => new Page(page));
+        //this.pages = [...this.pages, ...testPages];
     }
 
     get pageTableData() {

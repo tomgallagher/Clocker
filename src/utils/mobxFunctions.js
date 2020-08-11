@@ -22,7 +22,7 @@ export const createMobxMessageListener = ({
             //set subscription resource source to our chrome messaging observable
             currentSubscription = ChromeMessageObservable.pipe(
                 //log to console for debugging
-                tap((val) => console.log(val)),
+                //tap((val) => console.log(val)),
                 //filter the messages according to the command filter
                 filter(
                     (messageObj) => messageObj.request.command === commandFilter
