@@ -1,4 +1,4 @@
-import { observable, autorun, decorate, computed } from 'mobx';
+import { observable, autorun, reaction, decorate, computed } from 'mobx';
 import { createMobxMessageListener } from './../utils/mobxFunctions';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -24,7 +24,7 @@ export class JobStore {
         this.console = createMobxMessageListener({
             commandFilter: 'incomingConsoleMessage',
             requestProperty: 'message',
-            initialState: 'default',
+            initialState: null,
         });
         this.pageEntries = createMobxMessageListener({
             commandFilter: 'incomingPageData',
@@ -35,7 +35,7 @@ export class JobStore {
         //then we use the more complex observables in autorun
         autorun(() => {
             //no need to activate on the first default value
-            if (this.console.current() !== 'default') {
+            if (this.console.current()) {
                 // push the new message into the active job console messages array every time we receive the message
                 this.jobs[this.activeIndex].consoleMessages.push(
                     this.console.current()
@@ -104,55 +104,59 @@ export class Job {
             this[prop] = opts[prop];
         });
 
-        autorun(() => {
-            console.log('autorun: Autogenerating Job Reporting Stats');
-            //first we work out the averages
-            this.dclAverage = this.pages
-                .map((item) => item.dclAverage)
-                .reduce(RoundedAverage, 0);
-            this.completeAverage = this.pages
-                .map((item) => item.completeAverage)
-                .reduce(RoundedAverage, 0);
-            this.dataUsageAverage = this.pages
-                .map((item) => item.dataUsageAverage)
-                .reduce(RoundedAverageMegaBytes, 0);
-            this.headerTimingsAverage = this.pages
-                .map((item) => item.headerTimingsAverage)
-                .reduce(RoundedAverage, 0);
-            this.imageRequestsAverage = this.pages
-                .map((item) => item.imageRequestsAverage)
-                .reduce(RoundedAverage, 0);
-            this.fontRequestsAverage = this.pages
-                .map((item) => item.fontRequestsAverage)
-                .reduce(RoundedAverage, 0);
-            this.mediaRequestsAverage = this.pages
-                .map((item) => item.mediaRequestsAverage)
-                .reduce(RoundedAverage, 0);
-            this.cssRequestsAverage = this.pages
-                .map((item) => item.cssRequestsAverage)
-                .reduce(RoundedAverage, 0);
-            this.scriptRequestsAverage = this.pages
-                .map((item) => item.scriptRequestsAverage)
-                .reduce(RoundedAverage, 0);
-            //then we work out the running totals
-            this.imageLoadTotal = this.pages
-                .map((item) => item.imageLoadAverage)
-                .reduce(TotalMegaBytes, 0);
-            this.mediaLoadTotal = this.pages
-                .map((item) => item.mediaLoadAverage)
-                .reduce(TotalMegaBytes, 0);
-            this.fontLoadTotal = this.pages
-                .map((item) => item.fontLoadAverage)
-                .reduce(TotalMegaBytes, 0);
-            this.cssLoadTotal = this.pages
-                .map((item) => item.cssLoadAverage)
-                .reduce(TotalMegaBytes, 0);
-            this.scriptLoadTotal = this.pages
-                .map((item) => item.scriptLoadAverage)
-                .reduce(TotalMegaBytes, 0);
-            //and update the date
-            this.updatedAt = Date.now();
-        });
+        //then when a page gets added we
+        reaction(
+            () => this.pages.length,
+            () => {
+                console.log('reaction: Autogenerating Job Reporting Stats');
+                //first we work out the averages
+                this.dclAverage = this.pages
+                    .map((item) => item.dclAverage)
+                    .reduce(RoundedAverage, 0);
+                this.completeAverage = this.pages
+                    .map((item) => item.completeAverage)
+                    .reduce(RoundedAverage, 0);
+                this.dataUsageAverage = this.pages
+                    .map((item) => item.dataUsageAverage)
+                    .reduce(RoundedAverageMegaBytes, 0);
+                this.headerTimingsAverage = this.pages
+                    .map((item) => item.headerTimingsAverage)
+                    .reduce(RoundedAverage, 0);
+                this.imageRequestsAverage = this.pages
+                    .map((item) => item.imageRequestsAverage)
+                    .reduce(RoundedAverage, 0);
+                this.fontRequestsAverage = this.pages
+                    .map((item) => item.fontRequestsAverage)
+                    .reduce(RoundedAverage, 0);
+                this.mediaRequestsAverage = this.pages
+                    .map((item) => item.mediaRequestsAverage)
+                    .reduce(RoundedAverage, 0);
+                this.cssRequestsAverage = this.pages
+                    .map((item) => item.cssRequestsAverage)
+                    .reduce(RoundedAverage, 0);
+                this.scriptRequestsAverage = this.pages
+                    .map((item) => item.scriptRequestsAverage)
+                    .reduce(RoundedAverage, 0);
+                //then we work out the running totals
+                this.imageLoadTotal = this.pages
+                    .map((item) => item.imageLoadAverage)
+                    .reduce(TotalMegaBytes, 0);
+                this.mediaLoadTotal = this.pages
+                    .map((item) => item.mediaLoadAverage)
+                    .reduce(TotalMegaBytes, 0);
+                this.fontLoadTotal = this.pages
+                    .map((item) => item.fontLoadAverage)
+                    .reduce(TotalMegaBytes, 0);
+                this.cssLoadTotal = this.pages
+                    .map((item) => item.cssLoadAverage)
+                    .reduce(TotalMegaBytes, 0);
+                this.scriptLoadTotal = this.pages
+                    .map((item) => item.scriptLoadAverage)
+                    .reduce(TotalMegaBytes, 0);
+                //and update the date
+                this.updatedAt = Date.now();
+            }
+        );
 
         //then for testing purposes we need to add some fake data
         //const testData = makeData(20);
