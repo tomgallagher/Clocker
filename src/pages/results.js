@@ -18,6 +18,7 @@ import { RequestChart } from '../components/charts/requestChart';
 //for testing only
 import randomSentence from 'random-sentence';
 import { useInterval } from './../hooks/useInterval';
+import { SendChromeMessage } from './../utils/chromeFunctions';
 
 // <ResponsiveReactGridLayout> takes width to calculate positions on drag events.
 // WidthProvider can be used to automatically determine width upon initialization and window resize events.
@@ -33,6 +34,7 @@ export const Results = () => {
         //generate the new console message
         const text = randomSentence(500, 1500);
         runInAction(() => activeJob.consoleMessages.push(text));
+        SendChromeMessage({ command: 'forwardConsoleMessage', message: text });
     }, 2000);
 
     //then we need to have a save action on the layout change

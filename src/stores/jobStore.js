@@ -1,17 +1,12 @@
-import {
-    observable,
-    extendObservable,
-    toJS,
-    decorate,
-    reaction,
-    computed,
-} from 'mobx';
+import { observable, autorun, toJS, decorate, reaction, computed } from 'mobx';
+import { createMobxMessageListener } from './../utils/mobxFunctions';
 import { v4 as uuidv4 } from 'uuid';
 import {
     RoundedAverage,
     RoundedAverageMegaBytes,
     TotalMegaBytes,
 } from './../utils/arrayFunctions';
+
 import ColorPalette from './../components/charts/colorPalette.json';
 
 //for testing purposes
@@ -19,16 +14,31 @@ import { makeData } from './../__test__/makeData';
 
 export class JobStore {
     constructor() {
+        //we have the basic attributes of the job store
         this.jobs = [];
         this.activeIndex = 0;
         this.isLoading = false;
         this.isLoadError = false;
+        //more complex observable to link the rxjs messaging port from chrome into mobx store
+        //pass command filter, request property to return and default value
+        this.console = createMobxMessageListener({
+            commandFilter: 'incomingConsoleMessage',
+            requestProperty: 'message',
+            initialState: 'default',
+        });
+        //then we use the more complex observables in autorun
+        autorun(() => {
+            //no need to activate on the first default value
+            if (this.console.current() !== 'default') {
+                // printed everytime the console function receives a new message
+                console.log(this.console.current());
+            }
+        });
 
         //for testing purpose we need to add a fake job
         const job = new Job({});
         this.jobs.push(job);
     }
-    //we need a routine to load all the jobs from the database into the observable on start
 }
 
 //then add the decorations to make the relevant features of the list observable
@@ -37,6 +47,7 @@ decorate(JobStore, {
     activeIndex: observable,
     isLoading: observable,
     isLoadError: observable,
+    console: observable,
 });
 
 export class Job {
