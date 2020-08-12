@@ -19,6 +19,7 @@ export class Settings {
             latency: 40,
             pageIterations: 1,
             withCache: false,
+            withServiceWorker: true,
             customUrlLists: [],
             //UI settings
             sidebar: 'default',
@@ -69,6 +70,7 @@ decorate(Settings, {
     latency: observable,
     pageIterations: observable,
     withCache: observable,
+    withServiceWorker: observable,
     customUrlLists: observable,
     sidebar: observable,
     showSidebar: observable,

@@ -11,6 +11,7 @@ import { Latency } from '../components/settings/latency';
 import { WebsiteSelector } from './../components/settings/websiteSelector';
 import { PageIterations } from './../components/settings/pageIterations';
 import { WithCache } from './../components/settings/withCache';
+import { WithServiceWorker } from './../components/settings/withServiceWorker';
 
 // <ResponsiveReactGridLayout> takes width to calculate positions on drag events.
 // WidthProvider can be used to automatically determine width upon initialization and window resize events.
@@ -78,6 +79,11 @@ export const SettingsPage = () => {
                     <div key='withCache'>
                         <GridItem header='Cache Status'>
                             <WithCache />
+                        </GridItem>
+                    </div>
+                    <div key='withServiceWorker'>
+                        <GridItem header='Service Workers'>
+                            <WithServiceWorker />
                         </GridItem>
                     </div>
                 </ResponsiveGridLayout>
