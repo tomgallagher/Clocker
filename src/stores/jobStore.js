@@ -10,13 +10,13 @@ import {
 import ColorPalette from './../components/charts/colorPalette.json';
 
 //for testing purposes
-import { makeData } from './../__test__/makeData';
+//import { makeData } from './../__test__/makeData';
 
 export class JobStore {
     constructor() {
         //we have the basic attributes of the job store
         this.jobs = [];
-        this.activeIndex = this.jobs.length - 1;
+        this.activeIndex = 0;
         this.placeholderJob = new Job({});
         this.isLoading = false;
         this.isLoadError = false;
@@ -53,12 +53,22 @@ export class JobStore {
                 );
             }
         });
+
+        reaction(
+            () => this.jobs.length,
+            () => {
+                console.log('reaction: new job, updating activeIndex');
+                this.activeIndex = this.jobs.length - 1;
+            }
+        );
     }
 
     createJob = (job) => {
-        //for testing purpose we need to add a fake job
+        //on button click in banner.js front page we need to create a new job and push it into the jobs array
         const newJob = new Job(job);
         this.jobs.push(newJob);
+
+        //it also needs to be saved into db at this point
     };
 }
 

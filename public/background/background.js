@@ -19,7 +19,26 @@ chrome.runtime.onMessage.addListener((request) => {
                 payload: request.payload,
             });
             return true;
+        case 'startTest':
+            console.log(request.payload);
+            break;
         default:
             console.log('Unrecognised Message Command');
     }
 });
+
+//TEST START FUNCTION
+
+//DEBUGGER COMMANDS
+
+//UTILS
+
+const sendConsoleMessage = (text) => {
+    return new Promise((resolve) => {
+        chrome.runtime.sendMessage({
+            command: 'incomingConsoleMessage',
+            message: text,
+        });
+        resolve();
+    });
+};

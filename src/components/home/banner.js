@@ -8,14 +8,14 @@ import {
     Divider,
     Message,
 } from 'semantic-ui-react';
+import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import { useStores } from './../../hooks/useStores';
 import { SendChromeMessage } from './../../utils/chromeFunctions';
 import Chromium from './../../images/chromium.webp';
-import { toJS } from 'mobx';
 
 export const Banner = observer(() => {
-    const { Jobstore, Settings } = useStores();
+    const { JobStore, Settings } = useStores();
     const [showMessage, setShowMessage] = useState(false);
 
     const handleStartClick = () => {
@@ -33,11 +33,11 @@ export const Banner = observer(() => {
                 ...partialSettings
             } = Settings;
             //then create the job
-            Jobstore.createJob({ settings: partialSettings });
+            JobStore.createJob({ settings: partialSettings });
             //then send the message to background
             SendChromeMessage({
                 command: 'startTest',
-                payload: toJS(Settings),
+                payload: toJS(JobStore.jobs[JobStore.activeIndex]),
             });
             //then move to the results page
         } else {

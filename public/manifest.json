@@ -5,7 +5,13 @@
     "description": "Automated Testing of Browser Performance",
     "version": "0.0.1",
     "background": {
-        "scripts": ["background/background.js"],
+        "scripts": [
+            "background/rxjs.umd.min.js",
+            "background/background.js",
+            "background/job.js",
+            "background/page.js",
+            "background/iteration.js"
+        ],
         "persistent": true
     },
     "browser_action": {
