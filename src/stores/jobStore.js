@@ -16,7 +16,8 @@ export class JobStore {
     constructor() {
         //we have the basic attributes of the job store
         this.jobs = [];
-        this.activeIndex = 0;
+        this.activeIndex = this.jobs.length - 1;
+        this.placeholderJob = new Job({});
         this.isLoading = false;
         this.isLoadError = false;
         //more complex observable to link the rxjs messaging port from chrome into mobx store
@@ -52,11 +53,13 @@ export class JobStore {
                 );
             }
         });
-
-        //for testing purpose we need to add a fake job
-        const job = new Job({});
-        this.jobs.push(job);
     }
+
+    createJob = (job) => {
+        //for testing purpose we need to add a fake job
+        const newJob = new Job(job);
+        this.jobs.push(newJob);
+    };
 }
 
 //then add the decorations to make the relevant features of the list observable
@@ -104,7 +107,7 @@ export class Job {
             this[prop] = opts[prop];
         });
 
-        //then when a page gets added we
+        //then when a page gets added we recalc the averages
         reaction(
             () => this.pages.length,
             () => {

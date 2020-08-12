@@ -15,13 +15,25 @@ import Chromium from './../../images/chromium.webp';
 import { toJS } from 'mobx';
 
 export const Banner = observer(() => {
-    const { Settings } = useStores();
+    const { Jobstore, Settings } = useStores();
     const [showMessage, setShowMessage] = useState(false);
 
     const handleStartClick = () => {
         if (Settings.websites.length) {
             //remove the warning, if present
             setShowMessage(false);
+            //get the settings info we care about as partial
+            const {
+                customUrlLists,
+                sidebar,
+                showSidebar,
+                themeBackground,
+                settingsLayouts,
+                resultsLayouts,
+                ...partialSettings
+            } = Settings;
+            //then create the job
+            Jobstore.createJob({ settings: partialSettings });
             //then send the message to background
             SendChromeMessage({
                 command: 'startTest',

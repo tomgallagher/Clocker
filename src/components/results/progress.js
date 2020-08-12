@@ -7,7 +7,9 @@ export const ProgressBar = observer(() => {
     //get the settings to see if we have any saved layouts
     const { JobStore } = useStores();
     //get the activeJob
-    const activeJob = JobStore.jobs[JobStore.activeIndex];
+    const activeJob = JobStore.jobs.length
+        ? JobStore.jobs[JobStore.activeIndex]
+        : JobStore.placeholderJob;
     //get the current page count
     const pageCount = activeJob.pages.length;
     //then we will want to get the number of urls in the settings of the active job as well

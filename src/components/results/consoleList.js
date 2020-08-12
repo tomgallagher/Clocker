@@ -7,7 +7,9 @@ export const ConsoleList = observer(() => {
     //get the settings to see if we have any saved layouts
     const { JobStore } = useStores();
     //get the activeJob
-    const activeJob = JobStore.jobs[JobStore.activeIndex];
+    const activeJob = JobStore.jobs.length
+        ? JobStore.jobs[JobStore.activeIndex]
+        : JobStore.placeholderJob;
     //we need a reference to the child list component so we can scroll
     const listRef = useRef(null);
     //then we need to scroll to the bottom of the list each time it comes in

@@ -15,11 +15,13 @@ import { Timings } from './../components/results/timings';
 import { LoadChart } from '../components/charts/loadChart';
 import { RequestChart } from '../components/charts/requestChart';
 
+/*
 //for testing only
 import randomSentence from 'random-sentence';
 import { newPage } from './../__test__/makeData';
 import { useInterval } from './../hooks/useInterval';
 import { SendChromeMessage } from './../utils/chromeFunctions';
+*/
 
 // <ResponsiveReactGridLayout> takes width to calculate positions on drag events.
 // WidthProvider can be used to automatically determine width upon initialization and window resize events.
@@ -29,7 +31,11 @@ export const Results = () => {
     //get the settings to see if we have any saved layouts
     const { JobStore, Settings } = useStores();
     //get the activeJob
-    const activeJob = JobStore.jobs[JobStore.activeIndex];
+    const activeJob = JobStore.jobs.length
+        ? JobStore.jobs[JobStore.activeIndex]
+        : JobStore.placeholderJob;
+
+    /*
     //for testing the console - adds a new message every 2 seconds
     useInterval(() => {
         //generate the new console message
@@ -39,6 +45,7 @@ export const Results = () => {
         const page = newPage();
         SendChromeMessage({ command: 'forwardPageData', payload: page });
     }, 2000);
+    */
 
     //then we need to have a save action on the layout change
     const handleLayoutChange = (currentLayout, allLayouts) => {

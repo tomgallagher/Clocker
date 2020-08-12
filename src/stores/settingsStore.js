@@ -14,14 +14,14 @@ export class Settings {
         //always use the default settings
         var defaults = {
             //test settings
-            websites: [],
+            websites: ['https://turbobrowser.eu/'],
             bandwidth: 1.5,
             latency: 40,
             pageIterations: 1,
             withCache: false,
             withServiceWorker: true,
-            customUrlLists: [],
             //UI settings
+            customUrlLists: [],
             sidebar: 'default',
             showSidebar: false,
             themeBackground: null,

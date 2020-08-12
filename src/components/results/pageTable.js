@@ -7,7 +7,9 @@ export const PageTable = observer(() => {
     //get the settings to see if we have any saved layouts
     const { JobStore, Settings } = useStores();
     //get the activeJob
-    const activeJob = JobStore.jobs[JobStore.activeIndex];
+    const activeJob = JobStore.jobs.length
+        ? JobStore.jobs[JobStore.activeIndex]
+        : JobStore.placeholderJob;
 
     //then we have the custom row click
     const handleRowClick = (row) => {
