@@ -49,7 +49,7 @@ chrome.runtime.onMessage.addListener((request) => {
 
 const startTest = (payload) => {
     //report start to user console
-    sendConsoleMessage(`Started Test Job: ${payload.id}`);
+    sendConsoleMessage(`Started test job with ID: ${payload.id}`);
     //so we attach the active job description to the processing of the incoming payload
     activeJobSubscription = of(payload)
         .pipe(
@@ -67,31 +67,50 @@ const startTest = (payload) => {
             //then save the active job details to the globals for access anywhere
             tap((job) => (activeJob = job)),
             //then we run the debugger commands to get started
+            //use switchmap as we need to have the job to be able to pass the tab id to attach debugger etc
             switchMap(
-                //we need to have the job to be able to pass the tab id to attach debugger etc
+                (job) => from(attachDebugger(job.tabId)),
+                (job) => job
+            ),
+            //we need to have a view of network events so we can collect stats etc
+            switchMap(
+                (job) => from(enableNetworkEvents(job.tabId)),
+                (job) => job
+            ),
+            //we need to have a view of page events for alert controls etc,
+            switchMap(
+                (job) => from(enablePageEvents(job.tabId)),
+                (job) => job
+            ),
+            //we need to set the network conditions
+            switchMap(
                 (job) =>
-                    //we want to move forward when all our debugger commands have executed in sequence so we supply a promise
                     from(
-                        new Promise((resolve) =>
-                            //each of the promises in this array will be executed in sequence
-                            [attachDebugger(job.tabId)]
-                                //this executes each of the promises as f, using a resolved promise as initial value of p in the reducer
-                                .reduce((p, f) => p.then(f), Promise.resolve())
-                                //and this completes the switchmap functtion when all the promises have been executed
-                                .then(() => resolve())
+                        setNetworkConditions(
+                            job.tabId,
+                            job.latency,
+                            job.bandwidth_down,
+                            job.bandwidth_up
                         )
                     ),
-                //and we just pass back the job once all the params on the debugger have been set up
+                (job) => job
+            ),
+            //we need an alert handler so alert boxes do not stop the tests
+            switchMap(
+                (job) => from(addAlertHandler(job.tabId)),
                 (job) => job
             )
         )
         //report results and errors
         .subscribe(
             (res) => console.log(res),
-            (err) => console.log(err),
+            (err) =>
+                sendConsoleMessage(
+                    `Cannot complete test job with ID: ${payload.id}: unrecoverable error: ${err}`
+                ),
             () => {
                 sendConsoleMessage(
-                    `Completed Test Job: ${payload.id}`
+                    `Completed test job with ID: ${payload.id}`
                 ).then(() => detachDebugger(activeJob.tabId));
             }
         );
@@ -107,7 +126,7 @@ const openTestTab = () => {
             function (tab) {
                 if (tab) {
                     sendConsoleMessage(
-                        `Loaded Testing Tab with ID: ${tab.id}`
+                        `Loaded testing tab with ID: ${tab.id}`
                     ).then(() => {
                         //if we have an instant load then we resolve with the tab
                         if (tab.status === 'complete') {
@@ -132,7 +151,7 @@ const openTestTab = () => {
                     });
                 } else {
                     reject(
-                        'TEST ERROR: openTestTabAndCreateTestObject: No Tab Error'
+                        'Test Error: openTestTabAndCreateTestObject: No Tab Error'
                     );
                 }
             }
@@ -147,7 +166,7 @@ const closeTestTab = function (tabID) {
                 .then(() => resolve())
                 .catch((err) => {
                     sendConsoleMessage(
-                        `TEST ERROR: testSuiteHandler.closeTestTab: FAILED ON: ${err}`
+                        `Test Error: testSuiteHandler.closeTestTab: FAILED ON: ${err}`
                     );
                     reject(err);
                 });
@@ -162,7 +181,7 @@ const attachDebugger = (tabID) => {
         chrome.debugger.attach({ tabId: tabID }, '1.3', function () {
             if (chrome.runtime.lastError) {
                 sendConsoleMessage(
-                    `TEST ERROR: Remote Protocol Attach Error: ${chrome.runtime.lastError.message}`
+                    `Test Error: Remote Protocol Attach Error: ${chrome.runtime.lastError.message}`
                 );
                 reject(chrome.runtime.lastError.message);
                 return;
@@ -178,7 +197,7 @@ const detachDebugger = (tabID) => {
         chrome.debugger.detach({ tabId: tabID }, function () {
             if (chrome.runtime.lastError) {
                 sendConsoleMessage(
-                    `TEST ERROR: Remote Protocol Detach Error: ${chrome.runtime.lastError.message}`
+                    `Test Error: Remote Protocol Detach Error: ${chrome.runtime.lastError.message}`
                 );
                 reject(chrome.runtime.lastError.message);
                 return;
@@ -198,7 +217,7 @@ const enableNetworkEvents = (tabID) => {
             function () {
                 if (chrome.runtime.lastError) {
                     sendConsoleMessage(
-                        `TEST ERROR: Network Domain Enabling Error: ${chrome.runtime.lastError.message}`
+                        `Test Error: Network Domain Enabling Error: ${chrome.runtime.lastError.message}`
                     );
                     reject(chrome.runtime.lastError.message);
                     return;
@@ -221,7 +240,7 @@ const enablePageEvents = (tabID) => {
             function () {
                 if (chrome.runtime.lastError) {
                     sendConsoleMessage(
-                        `TEST ERROR: Page Domain Enabling Error: ${chrome.runtime.lastError.message}`
+                        `Test Error: Page Domain Enabling Error: ${chrome.runtime.lastError.message}`
                     );
                     reject(chrome.runtime.lastError.message);
                     return;
@@ -249,13 +268,13 @@ const setNetworkConditions = (tabID, latency, downloadSpeed, uploadSpeed) => {
             function () {
                 if (chrome.runtime.lastError) {
                     sendConsoleMessage(
-                        `TEST ERROR: Throttle Bandwidth Error: ${chrome.runtime.lastError.message}`
+                        `Test Error: Throttle Bandwidth Error: ${chrome.runtime.lastError.message}`
                     );
                     reject(chrome.runtime.lastError.message);
                     return;
                 }
                 sendConsoleMessage(
-                    `Chrome Debugger Network Conditions Set - Latency: ${latency} ms, DownloadSpeed: ${downloadSpeed} bytes/sec, UploadSpeed ${uploadSpeed} bytes/sec`
+                    `Network conditions customised: latency ${latency} ms, download ${downloadSpeed} bytes/sec, upload ${uploadSpeed} bytes/sec`
                 );
                 console.log(
                     `Test Suite: Chrome Debugger Network Conditions - Latency: ${latency} ms, DownloadSpeed: ${downloadSpeed} bytes/sec, UploadSpeed ${uploadSpeed} bytes/sec`
@@ -274,7 +293,7 @@ const clearCache = (tabID) => {
             function () {
                 if (chrome.runtime.lastError) {
                     sendConsoleMessage(
-                        `TEST ERROR: Remote Protocol Clear Cache Error: ${chrome.runtime.lastError.message}`
+                        `Test Error: Remote Protocol Clear Cache Error: ${chrome.runtime.lastError.message}`
                     );
                     reject(chrome.runtime.lastError.message);
                     return;
@@ -295,7 +314,7 @@ const disableCache = (tabID) => {
             function () {
                 if (chrome.runtime.lastError) {
                     sendConsoleMessage(
-                        `TEST ERROR: Remote Protocol Disable Cache Error: ${chrome.runtime.lastError.message}`
+                        `Test Error: Remote Protocol Disable Cache Error: ${chrome.runtime.lastError.message}`
                     );
                     reject(chrome.runtime.lastError.message);
                     return;
@@ -316,7 +335,7 @@ const pageNavigate = (url, tabID) => {
             function () {
                 if (chrome.runtime.lastError) {
                     sendConsoleMessage(
-                        `TEST ERROR: Remote Protocol Page Navigate Error: ${chrome.runtime.lastError.message}`
+                        `Test Error: Remote Protocol Page Navigate Error: ${chrome.runtime.lastError.message}`
                     );
                     reject(chrome.runtime.lastError.message);
                     return;
@@ -340,7 +359,7 @@ const dismissAlert = (tabID) => {
             function () {
                 if (chrome.runtime.lastError) {
                     sendConsoleMessage(
-                        `TEST ERROR: Dismiss Alert Arror: ${chrome.runtime.lastError.message}`
+                        `Test Error: Dismiss Alert Arror: ${chrome.runtime.lastError.message}`
                     );
                     reject(chrome.runtime.lastError.message);
                     return;
@@ -385,7 +404,7 @@ const scrollPageToBottom = (tabID) => {
             function () {
                 if (chrome.runtime.lastError) {
                     sendConsoleMessage(
-                        `TEST ERROR: Scroll To Bottom Error: ${chrome.runtime.lastError.message}`
+                        `Test Error: Scroll To Bottom Error: ${chrome.runtime.lastError.message}`
                     );
                     reject(chrome.runtime.lastError.message);
                     return;
@@ -408,7 +427,7 @@ const scrollPageToTop = (tabID) => {
             function () {
                 if (chrome.runtime.lastError) {
                     sendConsoleMessage(
-                        `TEST ERROR: Scroll to Top Error: ${chrome.runtime.lastError.message}`
+                        `Test Error: Scroll to Top Error: ${chrome.runtime.lastError.message}`
                     );
                     reject(chrome.runtime.lastError.message);
                     return;

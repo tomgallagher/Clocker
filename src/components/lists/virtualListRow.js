@@ -3,7 +3,7 @@ import { areEqual } from 'react-window';
 import { VirtualListContext } from './virtualList';
 
 //we use react memo in case the items passed to the list row as message are complex html
-export const VirtualListRow = memo(({ index, message }) => {
+export const VirtualListRow = memo(({ index, message, styleErrorText }) => {
     //here we use context to be set the size of the row and also so we can listen to changes on the window and any other size changes
     const { setSize, windowWidth } = useContext(VirtualListContext);
     //simple ref so we can imperatively get hold of height in hook
@@ -16,9 +16,18 @@ export const VirtualListRow = memo(({ index, message }) => {
     }, [index, setSize, windowWidth]);
 
     return (
-        <div ref={root} className={index % 2 ? 'ListItemOdd' : 'ListItemEven'}>
-            {message}
-        </div>
+        <div
+            ref={root}
+            className={index % 2 ? 'ListItemOdd' : 'ListItemEven'}
+            style={{
+                color:
+                    styleErrorText && message.includes('Error')
+                        ? '#d02712'
+                        : 'unset',
+            }}
+            //we use dangerously set html because we know where the message is coming from and we can then include links and styling in lists
+            dangerouslySetInnerHTML={{ __html: message }}
+        />
     );
     //Custom comparison function for React.memo.
 }, areEqual);

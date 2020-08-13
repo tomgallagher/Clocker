@@ -33,6 +33,7 @@ export const ConsoleList = observer(() => {
             <VirtualList
                 listRef={listRef}
                 rowData={activeJob.consoleMessages}
+                styleErrorText={true}
             />
         </div>
     );

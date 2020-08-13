@@ -11,7 +11,7 @@ import './virtualList.css';
 export const VirtualListContext = createContext({});
 
 //we have an incoming list ref so the parent can control the scrolling of the list
-export const VirtualList = ({ listRef, rowData }) => {
+export const VirtualList = ({ listRef, rowData, styleErrorText }) => {
     //we need to keep a memory of the row heights which we keep in a lookup object
     const sizeMap = useRef({});
     //then we have a function that we keep in memory that allows for the updating of the row height
@@ -50,6 +50,7 @@ export const VirtualList = ({ listRef, rowData }) => {
                                         <VirtualListRow
                                             index={index}
                                             message={rowData[index]}
+                                            styleErrorText={styleErrorText}
                                         />
                                     </div>
                                 )}
@@ -60,4 +61,10 @@ export const VirtualList = ({ listRef, rowData }) => {
             </div>
         </VirtualListContext.Provider>
     );
+};
+
+VirtualList.defaultProps = {
+    listRef: null,
+    rowData: [],
+    styleErrorText: false,
 };
