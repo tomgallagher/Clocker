@@ -298,6 +298,7 @@ const clearCache = (tabID) => {
                     reject(chrome.runtime.lastError.message);
                     return;
                 }
+                sendConsoleMessage('Browser cache cleared');
                 console.log(`Test Suite: Chrome Debugger Cache Cleared`);
                 resolve();
             }
@@ -319,6 +320,7 @@ const disableCache = (tabID) => {
                     reject(chrome.runtime.lastError.message);
                     return;
                 }
+                sendConsoleMessage('Browser cache disabled');
                 console.log(`Test Suite: Chrome Debugger Cache Disabled`);
                 resolve();
             }
@@ -340,7 +342,9 @@ const pageNavigate = (url, tabID) => {
                     reject(chrome.runtime.lastError.message);
                     return;
                 }
-                sendConsoleMessage(`TEST PROGRESS REPORT: Navigated to ${url}`);
+                sendConsoleMessage(
+                    `Navigated to <a target="_blank" href="${url}">${url}</a>`
+                );
                 console.log(
                     `Test Suite: Chrome Debugger Navigated to URL: ${url}`
                 );
@@ -364,6 +368,9 @@ const dismissAlert = (tabID) => {
                     reject(chrome.runtime.lastError.message);
                     return;
                 }
+                sendConsoleMessage(
+                    `Dismissed alert dialog on <a target="_blank" href="${url}">${url}</a>`
+                );
                 resolve();
             }
         );
@@ -409,6 +416,9 @@ const scrollPageToBottom = (tabID) => {
                     reject(chrome.runtime.lastError.message);
                     return;
                 }
+                sendConsoleMessage(
+                    `Scrolled to bottom of page at <a target="_blank" href="${url}">${url}</a>`
+                );
                 resolve();
             }
         );
