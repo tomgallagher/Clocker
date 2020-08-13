@@ -1,10 +1,21 @@
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
 import { Menu } from 'semantic-ui-react';
+import { runInAction } from 'mobx';
+import { useHistory } from 'react-router-dom';
+import { useStores } from './../hooks/useStores';
 
 export const Navigation = () => {
+    const { Settings } = useStores();
     const [active, setActive] = useState('home');
+
     let history = useHistory();
+
+    const showDefaultSidebar = () => {
+        runInAction(() => {
+            Settings.sidebar = '';
+            Settings.showSidebar = true;
+        });
+    };
 
     const handleItemClick = (e, { name }) => {
         setActive(name);
@@ -13,7 +24,7 @@ export const Navigation = () => {
 
     return (
         <Menu stackable>
-            <Menu.Item>
+            <Menu.Item onClick={showDefaultSidebar}>
                 <img src='/logo48.png' alt='logo' />
             </Menu.Item>
 

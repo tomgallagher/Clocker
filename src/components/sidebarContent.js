@@ -1,4 +1,5 @@
 import React from 'react';
+import { Header, List } from 'semantic-ui-react';
 import { useStores } from './../hooks/useStores';
 import { SidebarItem } from './../components/sidebarItem';
 import { LoadCustomList } from './../components/settings/sidebar/loadCustomList';
@@ -22,6 +23,68 @@ export const SidebarContent = () => {
                 </SidebarItem>
             );
         default:
-            return <div>Hello Sidebar With Default</div>;
+            return (
+                <SidebarItem title='Useful info'>
+                    <Header as='h4' content='About us' />
+                    <p>
+                        This extension was developed in order to test the
+                        performance of{' '}
+                        <a target='_blank' href='https://turbobrowser.eu/'>
+                            Turbo
+                        </a>
+                        , a Chromium-based browser that offers faster download
+                        speeds and lower data usage for desktop and mobile
+                        users.
+                    </p>
+                    <Header as='h4' content='Get in touch' />
+                    <p>
+                        The project is open source. For any bug reports,
+                        questions or other issues, please get in touch with us
+                        at our{' '}
+                        <a
+                            target='_blank'
+                            href='https://github.com/tomgallagher/Clocker'
+                        >
+                            Github
+                        </a>{' '}
+                        page.
+                    </p>
+                    <Header as='h4' content='Tips and tricks' />
+                    <ul
+                        style={{
+                            marginBlockStart: '5px',
+                            paddingInlineStart: '20px',
+                        }}
+                    >
+                        <li>
+                            When you start your first test, you may notice that
+                            a popup at the top of the recorded page, alerting
+                            you that Clocker uses the{' '}
+                            <strong>Chrome Devtools Protocol</strong>. If this
+                            bothers you, make the following changes:
+                            <ul
+                                style={{
+                                    marginBlockStart: '5px',
+                                    paddingInlineStart: '20px',
+                                }}
+                            >
+                                <li>
+                                    Windows - Right click on Chrome icon, select
+                                    Properties, select Shortcut tab, in Target
+                                    field add --silent-debugger-extension-api
+                                    after and <strong>outside</strong> the
+                                    target string.
+                                </li>
+                                <li>
+                                    macOS - open the terminal and paste this
+                                    path '/Applications/Google\
+                                    Chrome.app/Contents/MacOS/Google\ Chrome
+                                    --silent-debugger-extension-api' then Enter.
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </SidebarItem>
+            );
     }
 };

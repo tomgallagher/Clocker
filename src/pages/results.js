@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container } from 'semantic-ui-react';
+import { Container, Button } from 'semantic-ui-react';
 import { runInAction, toJS } from 'mobx';
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import { useStores } from './../hooks/useStores';
@@ -55,6 +55,17 @@ export const Results = () => {
 
     return (
         <>
+            <Button.Group
+                floated='right'
+                size='mini'
+                style={{ marginRight: '10px' }}
+            >
+                <Button color='black'>Pause</Button>
+                <Button.Or />
+                <Button color='black'>Resume</Button>
+                <Button.Or />
+                <Button negative>Abort</Button>
+            </Button.Group>
             <Container text textAlign='center'>
                 <PageTitle
                     title='Results'

@@ -37,20 +37,24 @@ export class JobStore {
         autorun(() => {
             //no need to activate on the first default value
             if (this.console.current()) {
+                //then see if we have an active job or placeholder
+                const activeJob = this.jobs.length
+                    ? this.jobs[this.activeIndex]
+                    : this.placeholderJob;
                 // push the new message into the active job console messages array every time we receive the message
-                this.jobs[this.activeIndex].consoleMessages.push(
-                    this.console.current()
-                );
+                activeJob.consoleMessages.push(this.console.current());
             }
         });
 
         autorun(() => {
             //no need to activate on null value
             if (this.pageEntries.current()) {
+                //then see if we have an active job or placeholder
+                const activeJob = this.jobs.length
+                    ? this.jobs[this.activeIndex]
+                    : this.placeholderJob;
                 // push the new data into the active job pages array every time we receive the message
-                this.jobs[this.activeIndex].pages.push(
-                    this.pageEntries.current()
-                );
+                activeJob.pages.push(this.pageEntries.current());
             }
         });
 

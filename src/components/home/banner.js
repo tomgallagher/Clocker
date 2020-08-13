@@ -8,6 +8,7 @@ import {
     Divider,
     Message,
 } from 'semantic-ui-react';
+import { useHistory } from 'react-router-dom';
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import { useStores } from './../../hooks/useStores';
@@ -17,6 +18,7 @@ import Chromium from './../../images/chromium.webp';
 export const Banner = observer(() => {
     const { JobStore, Settings } = useStores();
     const [showMessage, setShowMessage] = useState(false);
+    let history = useHistory();
 
     const handleStartClick = () => {
         if (Settings.websites.length) {
@@ -40,6 +42,7 @@ export const Banner = observer(() => {
                 payload: toJS(JobStore.jobs[JobStore.activeIndex]),
             });
             //then move to the results page
+            history.push('/results');
         } else {
             setShowMessage(true);
         }
