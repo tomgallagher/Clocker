@@ -10,7 +10,10 @@
             "background/background.js",
             "background/job.js",
             "background/page.js",
-            "background/iteration.js"
+            "background/iteration.js",
+            "background/rawData.js",
+            "background/dataCollection.js",
+            "background/arrayFunctions.js"
         ],
         "persistent": true
     },
@@ -29,6 +32,7 @@
         "webRequest",
         "webNavigation",
         "tabs",
-        "debugger"
+        "debugger",
+        "<all_urls>"
     ]
 }

@@ -4,6 +4,7 @@ class Page {
     constructor(options) {
         var defaults = {
             url: `N/A`,
+            iterationsArray: [],
             dclAverage: 0,
             completeAverage: 0,
             dataUsageAverage: 0,
@@ -18,6 +19,7 @@ class Page {
             scriptRequestsAverage: 0,
             cssLoadAverage: 0,
             cssRequestsAverage: 0,
+            screenshot: 'N/A',
         };
 
         // then we can take the name, id, createdAt and updatedAt values from the user interface job
@@ -29,5 +31,6 @@ class Page {
         });
     }
 
-    updatePageStats = (iterationsArray) => {};
+    //then we need to have a function that updates the page states from the iterations array
+    updatePageStats = () => {};
 }

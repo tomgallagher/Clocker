@@ -1,5 +1,14 @@
-const { of, from } = rxjs;
-const { map, switchMap, tap } = rxjs.operators;
+const { of, from, fromEventPattern, merge, zip } = rxjs;
+const {
+    map,
+    switchMap,
+    tap,
+    filter,
+    scan,
+    delay,
+    startWith,
+    share,
+} = rxjs.operators;
 
 //we need the active job and the active job observable subscription in global scope
 let activeJob = null;
@@ -26,7 +35,7 @@ chrome.runtime.onMessage.addListener((request) => {
             });
             return true;
         case 'startTest':
-            startTest(request.payload);
+            runJob(request.payload);
             break;
         case 'abortTest':
             //first we stop the subscription, which will prevent any further processing
@@ -47,7 +56,7 @@ chrome.runtime.onMessage.addListener((request) => {
 
 //TEST START FUNCTION
 
-const startTest = (payload) => {
+const runJob = (payload) => {
     //report start to user console
     sendConsoleMessage(`Started test job with ID: ${payload.id}`);
     //so we attach the active job description to the processing of the incoming payload
@@ -159,7 +168,7 @@ const openTestTab = () => {
     });
 };
 
-const closeTestTab = function (tabID) {
+const closeTestTab = (tabID) => {
     return new Promise((resolve, reject) => {
         chrome.tabs.remove(tabID, function () {
             sendConsoleMessage(`Closed Testing Tab with ID: ${tabID}`)
@@ -171,6 +180,57 @@ const closeTestTab = function (tabID) {
                     reject(err);
                 });
         });
+    });
+};
+
+const takeScreenshot = (tabID, url) => {
+    return new Promise((resolve) => {
+        //first we need to get the active tab
+        getActiveTabId().then((currentTabId) => {
+            if (currentTabId === tabID) {
+                //if we are on the job tab then we can just take the screenshot and resolve with the data url
+                Screenshot(url).then((dataURL) => resolve(dataURL));
+            } else {
+                //otherwise we need to switch to the job tab, take the screenshot, resolve with the data url and then switch back
+                switchToTab(tabID)
+                    .then(() => Screenshot(url))
+                    .then((dataURL) => resolve(dataURL))
+                    .then(() => switchToTab(currentTabId));
+            }
+        });
+    });
+};
+
+const Screenshot = (url) => {
+    return new Promise((resolve) => {
+        chrome.tabs.captureVisibleTab((dataURL) => {
+            if (chrome.runtime.lastError) {
+                sendConsoleMessage(
+                    `TEST ERROR: Tab Screenshot Error: ${chrome.runtime.lastError.message}`
+                );
+                resolve('');
+                return;
+            }
+            sendConsoleMessage(
+                `Screenshot saved for <a target="_blank" href="${url}">${url}</a>`
+            );
+            resolve(dataURL);
+        });
+    });
+};
+
+const getActiveTabId = () => {
+    return new Promise((resolve) => {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            const currentTab = tabs[0];
+            currentTab ? resolve(currentTab.id) : resolve(0);
+        });
+    });
+};
+
+const switchToTab = (tabId) => {
+    return new Promise((resolve) => {
+        chrome.tabs.update(tabId, { active: true }, () => resolve());
     });
 };
 

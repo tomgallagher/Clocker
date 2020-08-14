@@ -53,8 +53,10 @@ export class JobStore {
                 const activeJob = this.jobs.length
                     ? this.jobs[this.activeIndex]
                     : this.placeholderJob;
+                //make sure we have a page in the UI format, where we only care about the stats, not the iterations array, settings, etc. used by background.js
+                const page = new Page(this.pageEntries.current());
                 // push the new data into the active job pages array every time we receive the message
-                activeJob.pages.push(this.pageEntries.current());
+                activeJob.pages.push(page);
             }
         });
 
@@ -292,7 +294,7 @@ export class Page {
             cssRequestsAverage: 0,
         };
 
-        // create a new object with the defaults over-ridden by the options passed in, none in this case
+        // create a new object with the defaults over-ridden by the options passed in
         let opts = Object.assign({}, defaults, options);
 
         // assign options to instance data (using only property names contained in defaults object to avoid copying properties we don't want)

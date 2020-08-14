@@ -1,5 +1,5 @@
 import React from 'react';
-import { Header, List } from 'semantic-ui-react';
+import { Header } from 'semantic-ui-react';
 import { useStores } from './../hooks/useStores';
 import { SidebarItem } from './../components/sidebarItem';
 import { LoadCustomList } from './../components/settings/sidebar/loadCustomList';
@@ -29,7 +29,11 @@ export const SidebarContent = () => {
                     <p>
                         This extension was developed in order to test the
                         performance of{' '}
-                        <a target='_blank' href='https://turbobrowser.eu/'>
+                        <a
+                            target='_blank'
+                            href='https://turbobrowser.eu/'
+                            rel='noopener noreferrer'
+                        >
                             Turbo
                         </a>
                         , a Chromium-based browser that offers faster download
@@ -44,6 +48,7 @@ export const SidebarContent = () => {
                         <a
                             target='_blank'
                             href='https://github.com/tomgallagher/Clocker'
+                            rel='noopener noreferrer'
                         >
                             Github
                         </a>{' '}

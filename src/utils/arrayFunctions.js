@@ -6,7 +6,7 @@ export const RoundedAverage = (acc, value, index, array) => {
         //if we have then we return the rounded value
         return Math.round(calculatedValue / array.length);
     }
-    //otherwise we are still interating and we just return the running total
+    //otherwise we are still interacting and we just return the running total
     return calculatedValue;
 };
 export const RoundedAverageMegaBytes = (acc, value, index, array) => {
