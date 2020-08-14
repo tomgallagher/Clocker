@@ -12,15 +12,7 @@
 //as we are trying to collect header information about all resources loaded by an iframe we need to have an exhaustive list
 const onCompleteDataFilter = {
     urls: ['<all_urls>'],
-    types: [
-        'sub_frame',
-        'stylesheet',
-        'script',
-        'image',
-        'font',
-        'media',
-        'xmlhttprequest',
-    ],
+    types: ['sub_frame', 'stylesheet', 'script', 'image', 'font', 'media', 'xmlhttprequest'],
 };
 //the content length header is what we'll be using for data loads so we need to have the response headers as info
 const completeOptions = ['responseHeaders'];
@@ -29,21 +21,13 @@ const completeOptions = ['responseHeaders'];
 const onWebRequestCompleteObservable = fromEventPattern(
     (handler) => {
         //make sure we report subscription and unsubscription so we can see the memory being cleared on each page load
-        console.log(
-            `Test Suite: SUBSCRIBED to SHARED Web Request onComplete Observer.`
-        );
+        console.log(`Test Suite: SUBSCRIBED to SHARED Web Request onComplete Observer.`);
         //then we add the listener with the handler function for the callback and the filters for the requests
-        chrome.webRequest.onCompleted.addListener(
-            handler,
-            onCompleteDataFilter,
-            completeOptions
-        );
+        chrome.webRequest.onCompleted.addListener(handler, onCompleteDataFilter, completeOptions);
     },
     (handler) => {
         //report unsubscription
-        console.log(
-            `Test Suite: UNSUBSCRIBED from SHARED Web Request onComplete Observer.`
-        );
+        console.log(`Test Suite: UNSUBSCRIBED from SHARED Web Request onComplete Observer.`);
         //remove the onComplete Event handler function from the listener
         chrome.webRequest.onCompleted.removeListener(handler);
     },
@@ -60,15 +44,7 @@ const onWebRequestCompleteObservable = fromEventPattern(
 //as we are trying to collect error information about all blocked resources we need to have an exhaustive list
 const onErrorDataFilter = {
     urls: ['<all_urls>'],
-    types: [
-        'sub_frame',
-        'stylesheet',
-        'script',
-        'image',
-        'font',
-        'media',
-        'xmlhttprequest',
-    ],
+    types: ['sub_frame', 'stylesheet', 'script', 'image', 'font', 'media', 'xmlhttprequest'],
 };
 //the content length header is what we'll be using for data loads so we need to have the response headers as info
 const errorOptions = ['extraHeaders'];
@@ -77,21 +53,13 @@ const errorOptions = ['extraHeaders'];
 const onWebRequestErrorObservable = fromEventPattern(
     (handler) => {
         //make sure we report subscription and unsubscription so we can see the memory being cleared on each page load
-        console.log(
-            `Test Suite: SUBSCRIBED to SHARED Web Request onErrorOccurred Observer.`
-        );
+        console.log(`Test Suite: SUBSCRIBED to SHARED Web Request onErrorOccurred Observer.`);
         //then we add the listener with the handler function for the callback and the filters for the requests
-        chrome.webRequest.onErrorOccurred.addListener(
-            handler,
-            onErrorDataFilter,
-            errorOptions
-        );
+        chrome.webRequest.onErrorOccurred.addListener(handler, onErrorDataFilter, errorOptions);
     },
     (handler) => {
         //report unsubscription
-        console.log(
-            `Test Suite: UNSUBSCRIBED from SHARED Web Request onErrorOccurred Observer.`
-        );
+        console.log(`Test Suite: UNSUBSCRIBED from SHARED Web Request onErrorOccurred Observer.`);
         //remove the onErrorOccurred Event handler function from the listener
         chrome.webRequest.onErrorOccurred.removeListener(handler);
     },
@@ -114,11 +82,7 @@ const filteredNavigationURLs = [
 const filteredNavigationObject = { url: filteredNavigationURLs };
 
 const onBeforeNavigateObservable = fromEventPattern(
-    (handler) =>
-        chrome.webNavigation.onBeforeNavigate.addListener(
-            handler,
-            filteredNavigationObject
-        ),
+    (handler) => chrome.webNavigation.onBeforeNavigate.addListener(handler, filteredNavigationObject),
     (handler) => chrome.webNavigation.onBeforeNavigate.removeListener(handler),
     // returns { tabId: <integer>, url: <string>, frameId <integer>, parentFrameId: <integer>, timeStamp: <double> }
     // we add the Identifier
@@ -126,11 +90,7 @@ const onBeforeNavigateObservable = fromEventPattern(
 );
 
 const onCommittedObservable = fromEventPattern(
-    (handler) =>
-        chrome.webNavigation.onCommitted.addListener(
-            handler,
-            filteredNavigationObject
-        ),
+    (handler) => chrome.webNavigation.onCommitted.addListener(handler, filteredNavigationObject),
     (handler) => chrome.webNavigation.onCommitted.removeListener(handler),
     // returns { tabId: <integer>, url: <string>, processId: <integer>, frameId <integer>, parentFrameId: <integer>, timeStamp: <double> }
     // we add the Identifier
@@ -138,24 +98,15 @@ const onCommittedObservable = fromEventPattern(
 );
 
 const onDomContentLoadedObservable = fromEventPattern(
-    (handler) =>
-        chrome.webNavigation.onDOMContentLoaded.addListener(
-            handler,
-            filteredNavigationObject
-        ),
-    (handler) =>
-        chrome.webNavigation.onDOMContentLoaded.removeListener(handler),
+    (handler) => chrome.webNavigation.onDOMContentLoaded.addListener(handler, filteredNavigationObject),
+    (handler) => chrome.webNavigation.onDOMContentLoaded.removeListener(handler),
     // returns { tabId: <integer>, url: <string>, frameId <integer>, parentFrameId: <integer>, timeStamp: <double> }
     // we add the Identifier
     (info) => ({ ...info, eventType: 'onDOMContentLoaded' })
 );
 
 const onNavigationCompleteObservable = fromEventPattern(
-    (handler) =>
-        chrome.webNavigation.onCompleted.addListener(
-            handler,
-            filteredNavigationObject
-        ),
+    (handler) => chrome.webNavigation.onCompleted.addListener(handler, filteredNavigationObject),
     (handler) => chrome.webNavigation.onCompleted.removeListener(handler),
     // returns { tabId: <integer>, url: <string>, frameId <integer>, parentFrameId: <integer>, timeStamp: <double> }
     // we add the Identifier
@@ -169,16 +120,12 @@ const onNavigationCompleteObservable = fromEventPattern(
 const debuggerEventObservable = fromEventPattern(
     //we add the handler that takes the callback object from the debugger event and passes it to subscribers
     (handler) => {
-        console.log(
-            `Test Suite: SUBSCRIBED to SHARED Debugger Network Event Observer.`
-        );
+        console.log(`Test Suite: SUBSCRIBED to SHARED Debugger Network Event Observer.`);
         chrome.debugger.onEvent.addListener(handler);
     },
     //we add the handler that removed the handler from the debugger even and reports
     (handler) => {
-        console.log(
-            `Test Suite: UNSUBSCRIBED from SHARED Debugger Network Event Observer.`
-        );
+        console.log(`Test Suite: UNSUBSCRIBED from SHARED Debugger Network Event Observer.`);
         chrome.debugger.onEvent.removeListener(handler);
     },
     (_, message, obj) => {
@@ -201,17 +148,12 @@ const debuggerEventObservable = fromEventPattern(
 
 const iframeDataUsageObservable = onWebRequestCompleteObservable.pipe(
     //then we only want data from iframes or from resources that belong to iframes
-    filter(
-        (onCompleteObject) =>
-            onCompleteObject.type == 'sub_frame' || onCompleteObject.frameId > 0
-    ),
+    filter((onCompleteObject) => onCompleteObject.type == 'sub_frame' || onCompleteObject.frameId > 0),
     //then we only want objects that have response headers and the response headers include content length
     filter(
         (onCompleteObject) =>
             onCompleteObject.responseHeaders &&
-            onCompleteObject.responseHeaders.filter(
-                (val) => val.name.toLowerCase() === 'content-length'
-            ).length > 0
+            onCompleteObject.responseHeaders.filter((val) => val.name.toLowerCase() === 'content-length').length > 0
     ),
     //then we want to map the oncomplete object to an object that we can work alongside the other data objects
     map((onCompleteObject) => {
@@ -231,10 +173,7 @@ const iframeDataUsageObservable = onWebRequestCompleteObservable.pipe(
 
 const iframeResourceTypeObservable = onWebRequestCompleteObservable.pipe(
     //then we only want data from iframes or from resources that belong to iframes
-    filter(
-        (onCompleteObject) =>
-            onCompleteObject.type == 'sub_frame' || onCompleteObject.frameId > 0
-    ),
+    filter((onCompleteObject) => onCompleteObject.type == 'sub_frame' || onCompleteObject.frameId > 0),
     //then we want to map the oncomplete object to an object that we can work alongside the other data objects
     map((onCompleteObject) => {
         //then we need to create an object with the same params as the debugger network event object
@@ -261,9 +200,7 @@ const navigationEventObservable = merge(
     //filter for main frame events
     filter((navObject) => navObject.frameId == 0),
     //then filter for requests that match the active job tab, commented out for testing
-    filter((navObject) =>
-        activeJob ? navObject.tabId === activeJob.tabId : false
-    ),
+    filter((navObject) => (activeJob ? navObject.tabId === activeJob.tabId : false)),
     //and this is shared amongst many subscribers
     share()
 );
@@ -284,18 +221,10 @@ const streamlinedOnBeforeRequest = navigationEventObservable.pipe(
         return streamlinedObject;
     }),
     //log the arrival of the onBeforeRequest event
-    tap((navObject) =>
-        console.log(
-            `Test Suite: ${
-                navObject.pageStatus
-            } Observer Emits: ${JSON.stringify(navObject)}`
-        )
-    ),
+    tap((navObject) => console.log(`Test Suite: ${navObject.pageStatus} Observer Emits: ${JSON.stringify(navObject)}`)),
     //then report to the console
     tap((navObject) =>
-        sendConsoleMessage(
-            `Starting to load page at <a target="_blank" href="${navObject.url}">${navObject.url}</a>`
-        )
+        sendConsoleMessage(`Starting to load page at <a target="_blank" href="${navObject.url}">${navObject.url}</a>`)
     )
 );
 
@@ -315,13 +244,7 @@ const interactiveObservable = navigationEventObservable.pipe(
         return streamlinedObject;
     }),
     //log the arrival of the DomContentLoaded event
-    tap((navObject) =>
-        console.log(
-            `Test Suite: ${
-                navObject.pageStatus
-            } Observer Emits: ${JSON.stringify(navObject)}`
-        )
-    ),
+    tap((navObject) => console.log(`Test Suite: ${navObject.pageStatus} Observer Emits: ${JSON.stringify(navObject)}`)),
     //then report to the console
     tap((navObject) =>
         sendConsoleMessage(
@@ -346,18 +269,10 @@ const completeObservable = navigationEventObservable.pipe(
         return streamlinedObject;
     }),
     //log the arrival of the window load event
-    tap((navObject) =>
-        console.log(
-            `Test Suite: ${
-                navObject.pageStatus
-            } Observer Emits: ${JSON.stringify(navObject)}`
-        )
-    ),
+    tap((navObject) => console.log(`Test Suite: ${navObject.pageStatus} Observer Emits: ${JSON.stringify(navObject)}`)),
     //then report to the console
     tap((navObject) =>
-        sendConsoleMessage(
-            `Page load is complete at <a target="_blank" href="${navObject.url}">${navObject.url}</a>`
-        )
+        sendConsoleMessage(`Page load is complete at <a target="_blank" href="${navObject.url}">${navObject.url}</a>`)
     )
 );
 
@@ -366,17 +281,7 @@ const completeObservable = navigationEventObservable.pipe(
 //THEN WE ONLY WANT CERTAIN NETWORK EVENTS
 const dataUsageObservable = debuggerEventObservable.pipe(
     //to get at the data we use loading finished event
-    filter(
-        (networkObject) => networkObject.message == 'Network.loadingFinished'
-    ),
-    //log the arrival of the resource loading finished event
-    tap((networkObject) =>
-        console.log(
-            `Test Suite: Data Usage Observer Emits: ${JSON.stringify(
-                networkObject
-            )}`
-        )
-    ),
+    filter((networkObject) => networkObject.message == 'Network.loadingFinished'),
     //then down stream we only need the following params
     map((networkObject) => {
         return {
@@ -390,17 +295,7 @@ const dataUsageObservable = debuggerEventObservable.pipe(
 
 const resourceTypeObservable = debuggerEventObservable.pipe(
     //to get at the data we use loading finished event
-    filter(
-        (networkObject) => networkObject.message == 'Network.responseReceived'
-    ),
-    //log the arrival of the resource response received event
-    tap((networkObject) =>
-        console.log(
-            `Test Suite: Resource Type Observer Emits: ${JSON.stringify(
-                networkObject
-            )}`
-        )
-    ),
+    filter((networkObject) => networkObject.message == 'Network.responseReceived'),
     //then down stream we only need the following params
     map((networkObject) => {
         return {
@@ -416,9 +311,7 @@ const resourceTypeObservable = debuggerEventObservable.pipe(
 
 const resourceTimingObservable = debuggerEventObservable.pipe(
     //to get at the data we use loading finished event
-    filter(
-        (networkObject) => networkObject.message == 'Network.responseReceived'
-    ),
+    filter((networkObject) => networkObject.message == 'Network.responseReceived'),
     //then down stream we only need the following params
     map((networkObject) => {
         //we need to return a timing object with the url
@@ -438,21 +331,15 @@ const resourceTimingObservable = debuggerEventObservable.pipe(
 
 //COMBINE THE TWO DATA USAGE OBSERVABLES FOR A COMPLETE PICTURE
 
-const combinedDataUsageObservable = merge(
-    dataUsageObservable,
-    iframeDataUsageObservable
-);
+const combinedDataUsageObservable = merge(dataUsageObservable, iframeDataUsageObservable);
 
 //COMBINE THE TWO RESOURCE TYPE OBSERVABLES FOR A COMPLETE PICTURE
 
-const combinedResourceTypeObservable = merge(
-    resourceTypeObservable,
-    iframeResourceTypeObservable
-);
+const combinedResourceTypeObservable = merge(resourceTypeObservable, iframeResourceTypeObservable);
 
 //then we put them all together, starting with the onBeforeRequest - this should emit when the complete event occurs
 
-const masterDataObservable$ = streamlinedOnBeforeRequest.pipe(
+const masterDataObservable = streamlinedOnBeforeRequest.pipe(
     //once we have the initial emission of the onBeforeRequest, then we need to turn that into an observable that collects raw data into our object
     switchMap(
         (requestObj) =>
@@ -516,11 +403,7 @@ const masterDataObservable$ = streamlinedOnBeforeRequest.pipe(
                 resourceTimingObservable.pipe(
                     scan((headersTimingArray, value) => {
                         //if the timing object has a receiveHeadersEnd property, then lets save that to the arrau
-                        value.timing
-                            ? headersTimingArray.push(
-                                  value.timing.receiveHeadersEnd
-                              )
-                            : null;
+                        value.timing ? headersTimingArray.push(value.timing.receiveHeadersEnd) : null;
                         //then return the array for next scan
                         return headersTimingArray;
                         //seed with the initial array
@@ -531,14 +414,7 @@ const masterDataObservable$ = streamlinedOnBeforeRequest.pipe(
             //we take the initial onBefore request in the result selector function
             onBeforeRequest,
             //we deconstruct the zip array with variable names so we can work the data
-            [
-                onInteractive,
-                onComplete,
-                onErrorArray,
-                dataUsageLookupObject,
-                typeLookupObject,
-                headersTimingArray,
-            ]
+            [onInteractive, onComplete, onErrorArray, dataUsageLookupObject, typeLookupObject, headersTimingArray]
         ) => {
             console.log(
                 `%cTest Suite: TIMING OBJECT EMITTED for ${onBeforeRequest.url}`,
@@ -565,9 +441,7 @@ const masterDataObservable$ = streamlinedOnBeforeRequest.pipe(
             });
             //then we need to do some work to divide everything in the data usage lookup object according to resource type
             //loop through and allocate to arrays
-            for (let [requestId, encodedDataLength] of Object.entries(
-                dataUsageLookupObject
-            )) {
+            for (let [requestId, encodedDataLength] of Object.entries(dataUsageLookupObject)) {
                 switch (true) {
                     case typeLookupObject[requestId] == 'image':
                         data.imageLoadArray.push(encodedDataLength);
@@ -589,7 +463,7 @@ const masterDataObservable$ = streamlinedOnBeforeRequest.pipe(
                         data.scriptLoadArray.push(encodedDataLength);
                         data.scriptCount = data.scriptLoadArray.length;
                         break;
-                    case typeLookupObject[requestId] == 'document':
+                    case typeLookupObject[requestId] == 'document' || typeLookupObject[requestId] == 'sub_frame':
                         data.htmlLoadArray.push(encodedDataLength);
                         data.htmlCount = data.htmlLoadArray.length;
                         break;

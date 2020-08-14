@@ -4,9 +4,13 @@ class Iteration {
     constructor(options) {
         var defaults = {
             url: 'N/A',
+            tabId: 0,
+            startTime: Date.now(),
+            //timing stats
             onCommittedTime: 0,
             onDOMLoadedTime: 0,
             onCompleteTime: 0,
+            //major resource stats
             dataUsageTotal: 0,
             headerTimingsAverage: 0,
             requestTotal: 0,
@@ -20,6 +24,18 @@ class Iteration {
             styleRequestCount: 0,
             scriptLoadTotal: 0,
             scriptRequestCount: 0,
+            htmlLoadTotal: 0,
+            htmlRequestCount: 0,
+            //minor resource stats
+            xhrLoadTotal: 0,
+            xhrRequestCount: 0,
+            fetchLoadTotal: 0,
+            fetchRequestCount: 0,
+            websocketLoadTotal: 0,
+            websocketRequestCount: 0,
+            //note the addition of the error arrays
+            errorArray: [],
+            errorCount: 0,
         };
 
         // then we can take the name, id, createdAt and updatedAt values from the user interface job

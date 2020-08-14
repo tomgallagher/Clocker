@@ -5,6 +5,12 @@ class Page {
         var defaults = {
             url: `N/A`,
             iterationsArray: [],
+            //then we need to carry some data forward from the job
+            tabId: 0,
+            pageIterations: 1,
+            withCache: false,
+            withServiceWorker: true,
+            //then the stats
             dclAverage: 0,
             completeAverage: 0,
             dataUsageAverage: 0,

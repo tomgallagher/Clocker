@@ -1,11 +1,4 @@
-import {
-    observable,
-    extendObservable,
-    toJS,
-    decorate,
-    reaction,
-    computed,
-} from 'mobx';
+import { observable, extendObservable, toJS, decorate, reaction, computed } from 'mobx';
 import psl from 'psl';
 import { getDateString } from './../utils/strings';
 
@@ -17,7 +10,7 @@ export class Settings {
             websites: ['https://turbobrowser.eu/'],
             bandwidth: 1.5,
             latency: 40,
-            pageIterations: 1,
+            pageIterations: 2,
             withCache: false,
             withServiceWorker: true,
             //UI settings

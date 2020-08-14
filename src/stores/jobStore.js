@@ -1,11 +1,7 @@
 import { observable, autorun, reaction, decorate, computed } from 'mobx';
 import { createMobxMessageListener } from './../utils/mobxFunctions';
 import { v4 as uuidv4 } from 'uuid';
-import {
-    RoundedAverage,
-    RoundedAverageMegaBytes,
-    TotalMegaBytes,
-} from './../utils/arrayFunctions';
+import { RoundedAverage, RoundedAverageMegaBytes, TotalMegaBytes } from './../utils/arrayFunctions';
 
 import ColorPalette from './../components/charts/colorPalette.json';
 
@@ -38,9 +34,7 @@ export class JobStore {
             //no need to activate on the first default value
             if (this.console.current()) {
                 //then see if we have an active job or placeholder
-                const activeJob = this.jobs.length
-                    ? this.jobs[this.activeIndex]
-                    : this.placeholderJob;
+                const activeJob = this.jobs.length ? this.jobs[this.activeIndex] : this.placeholderJob;
                 // push the new message into the active job console messages array every time we receive the message
                 activeJob.consoleMessages.push(this.console.current());
             }
@@ -50,9 +44,7 @@ export class JobStore {
             //no need to activate on null value
             if (this.pageEntries.current()) {
                 //then see if we have an active job or placeholder
-                const activeJob = this.jobs.length
-                    ? this.jobs[this.activeIndex]
-                    : this.placeholderJob;
+                const activeJob = this.jobs.length ? this.jobs[this.activeIndex] : this.placeholderJob;
                 //make sure we have a page in the UI format, where we only care about the stats, not the iterations array, settings, etc. used by background.js
                 const page = new Page(this.pageEntries.current());
                 // push the new data into the active job pages array every time we receive the message
@@ -129,12 +121,8 @@ export class Job {
             () => {
                 console.log('reaction: Autogenerating Job Reporting Stats');
                 //first we work out the averages
-                this.dclAverage = this.pages
-                    .map((item) => item.dclAverage)
-                    .reduce(RoundedAverage, 0);
-                this.completeAverage = this.pages
-                    .map((item) => item.completeAverage)
-                    .reduce(RoundedAverage, 0);
+                this.dclAverage = this.pages.map((item) => item.dclAverage).reduce(RoundedAverage, 0);
+                this.completeAverage = this.pages.map((item) => item.completeAverage).reduce(RoundedAverage, 0);
                 this.dataUsageAverage = this.pages
                     .map((item) => item.dataUsageAverage)
                     .reduce(RoundedAverageMegaBytes, 0);
@@ -144,34 +132,20 @@ export class Job {
                 this.imageRequestsAverage = this.pages
                     .map((item) => item.imageRequestsAverage)
                     .reduce(RoundedAverage, 0);
-                this.fontRequestsAverage = this.pages
-                    .map((item) => item.fontRequestsAverage)
-                    .reduce(RoundedAverage, 0);
+                this.fontRequestsAverage = this.pages.map((item) => item.fontRequestsAverage).reduce(RoundedAverage, 0);
                 this.mediaRequestsAverage = this.pages
                     .map((item) => item.mediaRequestsAverage)
                     .reduce(RoundedAverage, 0);
-                this.cssRequestsAverage = this.pages
-                    .map((item) => item.cssRequestsAverage)
-                    .reduce(RoundedAverage, 0);
+                this.cssRequestsAverage = this.pages.map((item) => item.cssRequestsAverage).reduce(RoundedAverage, 0);
                 this.scriptRequestsAverage = this.pages
                     .map((item) => item.scriptRequestsAverage)
                     .reduce(RoundedAverage, 0);
                 //then we work out the running totals
-                this.imageLoadTotal = this.pages
-                    .map((item) => item.imageLoadAverage)
-                    .reduce(TotalMegaBytes, 0);
-                this.mediaLoadTotal = this.pages
-                    .map((item) => item.mediaLoadAverage)
-                    .reduce(TotalMegaBytes, 0);
-                this.fontLoadTotal = this.pages
-                    .map((item) => item.fontLoadAverage)
-                    .reduce(TotalMegaBytes, 0);
-                this.cssLoadTotal = this.pages
-                    .map((item) => item.cssLoadAverage)
-                    .reduce(TotalMegaBytes, 0);
-                this.scriptLoadTotal = this.pages
-                    .map((item) => item.scriptLoadAverage)
-                    .reduce(TotalMegaBytes, 0);
+                this.imageLoadTotal = this.pages.map((item) => item.imageLoadAverage).reduce(TotalMegaBytes, 0);
+                this.mediaLoadTotal = this.pages.map((item) => item.mediaLoadAverage).reduce(TotalMegaBytes, 0);
+                this.fontLoadTotal = this.pages.map((item) => item.fontLoadAverage).reduce(TotalMegaBytes, 0);
+                this.cssLoadTotal = this.pages.map((item) => item.cssLoadAverage).reduce(TotalMegaBytes, 0);
+                this.scriptLoadTotal = this.pages.map((item) => item.scriptLoadAverage).reduce(TotalMegaBytes, 0);
                 //and update the date
                 this.updatedAt = Date.now();
             }
