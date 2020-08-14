@@ -105,6 +105,18 @@ export class Job {
             fontLoadTotal: 0,
             cssLoadTotal: 0,
             scriptLoadTotal: 0,
+            minorResources: {
+                htmlLoadAverage: 0,
+                htmlRequestsAverage: 0,
+                xhrLoadAverage: 0,
+                xhrRequestsAverage: 0,
+                fetchLoadAverage: 0,
+                fetchRequestsAverage: 0,
+                websocketLoadAverage: 0,
+                websocketRequestsAverage: 0,
+                errorArray: 0,
+                errorCount: 0,
+            },
         };
 
         // create a new object with the defaults over-ridden by the options passed in
@@ -160,7 +172,7 @@ export class Job {
     get pageTableData() {
         return this.pages.map((page) => {
             //we have no need for the following fields in the table data, and it causes problems in the CSV download, so we destructure to remove
-            const { jobId, id, createdAt, screenshot, ...partialPage } = page;
+            const { jobId, id, createdAt, screenshot, minorResources, ...partialPage } = page;
             //then we return the partial page
             return partialPage;
         });

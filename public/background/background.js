@@ -180,8 +180,10 @@ const runIteration = (page) => {
                 switchMap(
                     (iteration) =>
                         from(
-                            //this clears the cache each time we start
-                            Promise.all([clearCache(iteration.tabId), disableCache(iteration.tabId)])
+                            page.withCache
+                                ? //this clears the cache each time we start
+                                  Promise.all([clearCache(iteration.tabId), disableCache(iteration.tabId)])
+                                : Promise.resolve()
                         ),
                     (iteration) => iteration
                 ),
@@ -245,9 +247,9 @@ const runIteration = (page) => {
                         iteration.styleRequestCount = styleCount;
                         iteration.scriptLoadTotal = scriptLoadArray.filter(Boolean).reduce(Total, 0);
                         iteration.scriptRequestCount = scriptCount;
+                        //minor resource stats
                         iteration.htmlLoadTotal = htmlLoadArray.filter(Boolean).reduce(Total, 0);
                         iteration.htmlRequestCount = htmlCount;
-                        //minor resource stats
                         iteration.xhrLoadTotal = xhrLoadArray.filter(Boolean).reduce(Total, 0);
                         iteration.xhrRequestCount = xhrCount;
                         iteration.fetchLoadTotal = fetchLoadArray.filter(Boolean).reduce(Total, 0);

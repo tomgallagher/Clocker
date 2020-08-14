@@ -25,6 +25,18 @@ class Page {
             scriptRequestsAverage: 0,
             cssLoadAverage: 0,
             cssRequestsAverage: 0,
+            minorResources: {
+                htmlLoadAverage: 0,
+                htmlRequestsAverage: 0,
+                xhrLoadAverage: 0,
+                xhrRequestsAverage: 0,
+                fetchLoadAverage: 0,
+                fetchRequestsAverage: 0,
+                websocketLoadAverage: 0,
+                websocketRequestsAverage: 0,
+                errorArray: 0,
+                errorCount: 0,
+            },
             screenshot: 'N/A',
         };
 

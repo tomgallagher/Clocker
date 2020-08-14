@@ -24,9 +24,9 @@ class Iteration {
             styleRequestCount: 0,
             scriptLoadTotal: 0,
             scriptRequestCount: 0,
+            //minor resource stats
             htmlLoadTotal: 0,
             htmlRequestCount: 0,
-            //minor resource stats
             xhrLoadTotal: 0,
             xhrRequestCount: 0,
             fetchLoadTotal: 0,
