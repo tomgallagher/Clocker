@@ -50,8 +50,8 @@ export const SidebarContent = () => {
                             paddingInlineStart: '20px',
                         }}
                     >
-                        <li>
-                            When you start your first test, you may notice that a popup at the top of the recorded page,
+                        <li style={{ paddingBottom: '10px' }}>
+                            When you start your first test, you will notice a popup at the top of each browser tab,
                             alerting you that Clocker uses the <strong>Remote Debugging Protocol</strong>. If this
                             bothers you, make the following changes:
                             <ul
@@ -71,6 +71,10 @@ export const SidebarContent = () => {
                                     Enter.
                                 </li>
                             </ul>
+                        </li>
+                        <li style={{ paddingBottom: '10px' }}>
+                            The page results table has a master/detail view. Click on any page row to get screenshot,
+                            further stats and blocking/error reports in the sidebar
                         </li>
                     </ul>
                 </SidebarItem>

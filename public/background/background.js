@@ -48,10 +48,12 @@ chrome.runtime.onMessage.addListener((request) => {
                 //first we stop the subscription, which will prevent any further processing
                 activeJobSubscription.unsubscribe();
                 //then we close the test tab
-                closeTestTab(activeJob.tabId).then(() =>
-                    //then we send the message
-                    sendConsoleMessage(`Aborted Test Job: ${activeJob.id}`)
-                );
+                detachDebugger(activeJob.tabId)
+                    .then(() => closeTestTab(activeJob.tabId))
+                    .then(() =>
+                        //then we send the message
+                        sendConsoleMessage(`Aborted Test Job: ${activeJob.id}`)
+                    );
             }
             break;
         default:
@@ -138,7 +140,30 @@ const runJob = (payload) => {
 const runSingleUrl = (page) => {
     return new Promise((resolve) => {
         of(page)
-            .pipe(flatMap((page) => from(runIterations(page))))
+            .pipe(
+                //run the iterations for the page
+                flatMap((page) => from(runIterations(page))),
+                //run the stats collection from iterations
+                tap((page) => {
+                    page.updatePageStats();
+                    sendConsoleMessage(
+                        `Computing average page stats across ${page.pageIterations} iterations for <a target="_blank" href="${page.url}">${page.url}</a>`
+                    );
+                }),
+                //then run the screenshot
+                switchMap(
+                    (page) => from(takeScreenshot(page.tabId, page.url)),
+                    (page, dataURL) => {
+                        page.screenshot = dataURL;
+                        return page;
+                    }
+                ),
+                //then send the data to the UI
+                switchMap(
+                    (page) => from(sendPageData(page)),
+                    (page) => page
+                )
+            )
             .subscribe((page) => resolve(page));
     });
 };
@@ -147,7 +172,10 @@ const runIterations = (page) => {
     return new Promise((resolve, reject) => {
         //here we encase the promise in an observable so that our single promise can be retried
         var rxShelledPromise = defer(() => from(runIteration(page)));
-        //then we subscribe to the promise with a repeat setting - the number of interations minus 1 as we have already done one
+        //then we subscribe to the promise with a repeat setting
+
+        //this is where the pause / resume might go, buffer toggle before the repeat
+
         rxShelledPromise.pipe(repeat(page.pageIterations)).subscribe(
             (iteration) => {
                 page.iterationsArray.push(iteration);
@@ -176,14 +204,15 @@ const runIteration = (page) => {
                             tabId: mappedPage.tabId,
                         })
                 ),
-                //then we switchmap into an execution of the promises that clears the cache
+                //then we switchmap into an execution of the promises that clear the cache
                 switchMap(
                     (iteration) =>
                         from(
                             page.withCache
-                                ? //this clears the cache each time we start
+                                ? //if the user has chosen to have the cache active then just resolve
+                                  Promise.resolve()
+                                : //otherwise this clears the cache each time we start an iteration
                                   Promise.all([clearCache(iteration.tabId), disableCache(iteration.tabId)])
-                                : Promise.resolve()
                         ),
                     (iteration) => iteration
                 ),
@@ -191,14 +220,18 @@ const runIteration = (page) => {
                 switchMap(
                     (iteration) =>
                         combineLatest(
+                            //this opens the page and injects the DCL and complete down/up scroll actions into runtime, this will emit almost instantly
                             from(navigateAndScroll(iteration.tabId, iteration.url)),
-                            //this is the key data collection observable at dataCollection.js
+                            //this is the key data collection observable at dataCollection.js - only emits 5 seconds after page completes
                             masterDataObservable.pipe(tap((data) => console.log(data)))
                         ),
                     (
+                        //with result selector function we take iteration and array from combineLatest
                         iteration,
                         [
+                            //first item in the array is the resolved navigation promise, just returns true
                             _,
+                            //then we need to deconstruct the RawData class object that comes back from the masterDataObservable
                             {
                                 onBeforeRequestTime,
                                 onInteractiveTime,
@@ -229,6 +262,8 @@ const runIteration = (page) => {
                             },
                         ]
                     ) => {
+                        //CONVERT RAW DATA CLASS TO ITERATION CLASS
+
                         //timing stats
                         iteration.onCommittedTime = onBeforeRequestTime - iteration.startTime;
                         iteration.onDOMLoadedTime = onInteractiveTime - iteration.startTime;
@@ -263,13 +298,13 @@ const runIteration = (page) => {
                         return iteration;
                     }
                 ),
-                //only take one before killing the stream and unsubscribing from all three inputs into the combineLatest stream
+                //only take one before killing the stream and unsubscribing from all inputs into the combineLatest stream
                 take(1)
+
+                //then this is where we kill the service worker if that's what's ordered
             )
-            //then report and resolve
-            .subscribe((iteration) => {
-                resolve(iteration);
-            });
+            //then resolve
+            .subscribe((iteration) => resolve(iteration));
     });
 };
 
@@ -361,7 +396,9 @@ const getActiveTabId = () => {
 
 const switchToTab = (tabId) => {
     return new Promise((resolve) => {
-        chrome.tabs.update(tabId, { active: true }, () => resolve());
+        chrome.tabs.update(tabId, { selected: true }, () => {
+            setTimeout(() => resolve(), 200);
+        });
     });
 };
 
@@ -607,6 +644,16 @@ const sendConsoleMessage = (text) => {
         chrome.runtime.sendMessage({
             command: 'incomingConsoleMessage',
             message: text,
+        });
+        resolve();
+    });
+};
+
+const sendPageData = (payload) => {
+    return new Promise((resolve) => {
+        chrome.runtime.sendMessage({
+            command: 'incomingPageData',
+            payload: payload,
         });
         resolve();
     });

@@ -50,5 +50,84 @@ class Page {
     }
 
     //then we need to have a function that updates the page states from the iterations array
-    updatePageStats = () => {};
+    updatePageStats = () => {
+        if (this.iterationsArray.length) {
+            this.dclAverage = this.iterationsArray
+                .map((iteration) => iteration.onDOMLoadedTime)
+                .reduce(RoundedAverage, 0);
+            this.completeAverage = this.iterationsArray
+                .map((iteration) => iteration.onCompleteTime)
+                .reduce(RoundedAverage, 0);
+            this.dataUsageAverage = this.iterationsArray
+                .map((iteration) => iteration.dataUsageTotal)
+                .reduce(RoundedAverage, 0);
+            this.headerTimingsAverage = this.iterationsArray
+                .map((iteration) => iteration.headerTimingsAverage)
+                .reduce(RoundedAverage, 0);
+            this.imageLoadAverage = this.iterationsArray
+                .map((iteration) => iteration.imageLoadTotal)
+                .reduce(RoundedAverage, 0);
+            this.imageRequestsAverage = this.iterationsArray
+                .map((iteration) => iteration.imageRequestCount)
+                .reduce(RoundedAverage, 0);
+            this.mediaLoadAverage = this.iterationsArray
+                .map((iteration) => iteration.mediaLoadTotal)
+                .reduce(RoundedAverage, 0);
+            this.mediaRequestsAverage = this.iterationsArray
+                .map((iteration) => iteration.mediaRequestCount)
+                .reduce(RoundedAverage, 0);
+            this.fontLoadAverage = this.iterationsArray
+                .map((iteration) => iteration.fontLoadTotal)
+                .reduce(RoundedAverage, 0);
+            this.fontRequestsAverage = this.iterationsArray
+                .map((iteration) => iteration.fontRequestCount)
+                .reduce(RoundedAverage, 0);
+            this.scriptLoadAverage = this.iterationsArray
+                .map((iteration) => iteration.scriptLoadTotal)
+                .reduce(RoundedAverage, 0);
+            this.scriptRequestsAverage = this.iterationsArray
+                .map((iteration) => iteration.scriptRequestCount)
+                .reduce(RoundedAverage, 0);
+            this.cssLoadAverage = this.iterationsArray
+                .map((iteration) => iteration.styleLoadTotal)
+                .reduce(RoundedAverage, 0);
+            this.cssRequestsAverage = this.iterationsArray
+                .map((iteration) => iteration.styleRequestCount)
+                .reduce(RoundedAverage, 0);
+
+            this.minorResources.htmlLoadAverage = this.iterationsArray
+                .map((iteration) => iteration.htmlLoadTotal)
+                .reduce(RoundedAverage, 0);
+            this.minorResources.htmlRequestsAverage = this.iterationsArray
+                .map((iteration) => iteration.htmlRequestCount)
+                .reduce(RoundedAverage, 0);
+            this.minorResources.xhrLoadAverage = this.iterationsArray
+                .map((iteration) => iteration.xhrLoadTotal)
+                .reduce(RoundedAverage, 0);
+            this.minorResources.xhrRequestsAverage = this.iterationsArray
+                .map((iteration) => iteration.xhrRequestCount)
+                .reduce(RoundedAverage, 0);
+            this.minorResources.fetchLoadAverage = this.iterationsArray
+                .map((iteration) => iteration.fetchLoadTotal)
+                .reduce(RoundedAverage, 0);
+            this.minorResources.fetchRequestsAverage = this.iterationsArray
+                .map((iteration) => iteration.fetchRequestCount)
+                .reduce(RoundedAverage, 0);
+            this.minorResources.websocketLoadAverage = this.iterationsArray
+                .map((iteration) => iteration.websocketLoadTotal)
+                .reduce(RoundedAverage, 0);
+            this.minorResources.websocketRequestsAverage = this.iterationsArray
+                .map((iteration) => iteration.websocketRequestCount)
+                .reduce(RoundedAverage, 0);
+
+            //for errors, or blocked items, we want an average of the resources blocked
+            this.minorResources.errorCount = this.iterationsArray
+                .map((iteration) => iteration.errorCount)
+                .reduce(RoundedAverage, 0);
+            //but we want to keep a record of what was blocked on each iteration, so we're going to need to push index into an object that holds the errors
+            this.minorResources.errorArray = this.iterationsArray.map((iteration, index) => ({
+                [index]: iteration.errorArray,
+            }));
+        }
+    };
 }
