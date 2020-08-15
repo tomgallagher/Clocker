@@ -14,13 +14,14 @@ import { ConsoleList } from './../components/results/consoleList';
 import { Timings } from './../components/results/timings';
 import { LoadChart } from '../components/charts/loadChart';
 import { RequestChart } from '../components/charts/requestChart';
+import { SendChromeMessage } from './../utils/chromeFunctions';
 
 /*
 //for testing only
 import randomSentence from 'random-sentence';
 import { newPage } from './../__test__/makeData';
 import { useInterval } from './../hooks/useInterval';
-import { SendChromeMessage } from './../utils/chromeFunctions';
+
 */
 
 // <ResponsiveReactGridLayout> takes width to calculate positions on drag events.
@@ -31,9 +32,7 @@ export const Results = () => {
     //get the settings to see if we have any saved layouts
     const { JobStore, Settings } = useStores();
     //get the activeJob
-    const activeJob = JobStore.jobs.length
-        ? JobStore.jobs[JobStore.activeIndex]
-        : JobStore.placeholderJob;
+    const activeJob = JobStore.jobs.length ? JobStore.jobs[JobStore.activeIndex] : JobStore.placeholderJob;
 
     /*
     //for testing the console - adds a new message every 2 seconds
@@ -53,25 +52,39 @@ export const Results = () => {
         runInAction(() => (Settings.resultsLayouts = allLayouts));
     };
 
+    const handleButtonClick = (e, { name }) => {
+        switch (name) {
+            case 'Pause':
+                SendChromeMessage({ command: 'pauseTest' });
+                break;
+            case 'Resume':
+                SendChromeMessage({ command: 'resumeTest' });
+                break;
+            case 'Abort':
+                SendChromeMessage({ command: 'abortTest' });
+                break;
+        }
+    };
+
     return (
         <>
-            <Button.Group
-                floated='right'
-                size='mini'
-                style={{ marginRight: '10px' }}
-            >
-                <Button color='black'>Pause</Button>
+            <Button.Group floated='right' size='mini' style={{ marginRight: '10px' }}>
+                <Button name='Pause' color='black' onClick={handleButtonClick}>
+                    Pause
+                </Button>
                 <Button.Or />
-                <Button color='black'>Resume</Button>
+                <Button name='Resume' color='black' onClick={handleButtonClick}>
+                    Resume
+                </Button>
                 <Button.Or />
-                <Button negative>Abort</Button>
+                <Button name='Abort' negative onClick={handleButtonClick}>
+                    Abort
+                </Button>
             </Button.Group>
             <Container text textAlign='center'>
                 <PageTitle
                     title='Results'
-                    subtitle={`Started: ${new Date(
-                        activeJob.createdAt
-                    ).toLocaleString()}`}
+                    subtitle={`Started: ${new Date(activeJob.createdAt).toLocaleString()}`}
                     dividing={false}
                 />
             </Container>
@@ -80,9 +93,7 @@ export const Results = () => {
                     className='layout'
                     draggableHandle='.draggableHandle'
                     layouts={
-                        Object.keys(Settings.resultsLayouts).length
-                            ? Settings.resultsLayouts
-                            : DefaultResultsLayouts
+                        Object.keys(Settings.resultsLayouts).length ? Settings.resultsLayouts : DefaultResultsLayouts
                     }
                     breakpoints={{
                         lg: 1200,

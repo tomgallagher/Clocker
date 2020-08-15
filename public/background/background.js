@@ -379,9 +379,38 @@ const Screenshot = (url) => {
                 resolve('');
                 return;
             }
-            sendConsoleMessage(`Screenshot saved for <a target="_blank" href="${url}">${url}</a>`);
-            resolve(dataURL);
+            resizeScreenshot(dataURL)
+                .then((smallerDataUrl) => resolve(smallerDataUrl))
+                .then(() => sendConsoleMessage(`Screenshot saved for <a target="_blank" href="${url}">${url}</a>`));
         });
+    });
+};
+
+const resizeScreenshot = (dataURL) => {
+    return new Promise((resolve) => {
+        const sourceImage = new Image();
+        sourceImage.onload = () => {
+            //set the maximum we want, let's say 500 in either direction
+            const maxWidth = 400;
+            const maxHeight = 400;
+            //then we get the natural width and height of the image
+            const srcWidth = sourceImage.naturalWidth;
+            const srcHeight = sourceImage.naturalHeight;
+            //then we get the ratio
+            const ratio = Math.min(maxWidth / srcWidth, maxHeight / srcHeight);
+            //then we create the width and height for the canvas
+            const canvasWidth = Math.round(srcWidth * ratio);
+            const canvasHeight = Math.round(srcHeight * ratio);
+            // Create a canvas with the desired dimensions
+            var canvas = document.createElement('canvas');
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            // Scale and draw the source image to the canvas
+            canvas.getContext('2d').drawImage(sourceImage, 0, 0, canvasWidth, canvasHeight);
+            // Convert the canvas to a data URL in PNG format
+            resolve(canvas.toDataURL('image/jpeg', 1.0));
+        };
+        sourceImage.src = dataURL;
     });
 };
 
