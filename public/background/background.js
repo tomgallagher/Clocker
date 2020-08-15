@@ -57,7 +57,6 @@ chrome.runtime.onMessage.addListener((request) => {
             }
             break;
         default:
-            console.log('Unrecognised Message Command');
     }
 });
 

@@ -17,6 +17,14 @@
         ],
         "persistent": true
     },
+    "content_scripts": [
+        {
+            "matches": ["http://*/*", "https://*/*"],
+            "exclude_globs": ["*chrome://*", "*chrome-extension://*"],
+            "js": ["contentScripts/monitor.js"],
+            "run_at": "document_start"
+        }
+    ],
     "browser_action": {
         "default_title": "Automated Testing of Browser Performance"
     },
@@ -27,12 +35,5 @@
         "128": "logo128.png"
     },
     "content_security_policy": "script-src 'self' 'sha256-ELkDE2InNI702G86lymxXYBdrcJq5bMn8+PhTgN6cks='; object-src 'self'",
-    "permissions": [
-        "unlimitedStorage",
-        "webRequest",
-        "webNavigation",
-        "tabs",
-        "debugger",
-        "<all_urls>"
-    ]
+    "permissions": ["unlimitedStorage", "webRequest", "webNavigation", "tabs", "debugger", "<all_urls>"]
 }

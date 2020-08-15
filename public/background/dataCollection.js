@@ -135,6 +135,29 @@ const debuggerEventObservable = fromEventPattern(
     //and this is shared amongst many subscribers
 ).pipe(share());
 
+//SOURCE OBSERVABLE - MESSAGE EVENTS
+
+//this handles the interactive and complete readystate change messages that come from the page and pass them into an observer
+
+const messagingObservable = fromEventPattern(
+    (handler) => {
+        const wrapper = (request, sender, sendResponse) => {
+            //note the async is set to true by default to allow for slow JSON responses in the createDataResultStream combineLatest
+            const options = { async: false, request, sender, sendResponse };
+            handler(options);
+            return options.async;
+        };
+        console.log(`Test Suite: SUBSCRIBED to SHARED Sync Messaging Observer Instance`);
+        chrome.runtime.onMessage.addListener(wrapper);
+        return wrapper;
+    },
+    (handler, wrapper) => {
+        console.log(`Test Suite: UNSUBSCRIBED from SHARED Sync Messaging Observer Instance`);
+        chrome.runtime.onMessage.removeListener(wrapper);
+    }
+    //and this is shared amongst many subscribers
+).pipe(share());
+
 /*
     The raw data observables need to be filtered and otherwise mutated before being combined    
 
@@ -213,7 +236,7 @@ const streamlinedOnBeforeRequest = navigationEventObservable.pipe(
         var streamlinedObject = Object.assign(
             {},
             {
-                pageStatus: navObject.eventType,
+                command: navObject.eventType,
                 url: navObject.url,
                 timestamp: Date.now(),
             }
@@ -221,14 +244,14 @@ const streamlinedOnBeforeRequest = navigationEventObservable.pipe(
         return streamlinedObject;
     }),
     //log the arrival of the onBeforeRequest event
-    tap((navObject) => console.log(`Test Suite: ${navObject.pageStatus} Observer Emits: ${JSON.stringify(navObject)}`)),
+    tap((navObject) => console.log(`Test Suite: ${navObject.command} Observer Emits: ${JSON.stringify(navObject)}`)),
     //then report to the console
     tap((navObject) =>
         sendConsoleMessage(`Starting to load page at <a target="_blank" href="${navObject.url}">${navObject.url}</a>`)
     )
 );
 
-const interactiveObservable = navigationEventObservable.pipe(
+const interactiveNavigationObservable = navigationEventObservable.pipe(
     //filter it for the DomContentLoaded events only
     filter((navObject) => navObject.eventType == 'onDOMContentLoaded'),
     //add a timestamp as it passes by
@@ -236,24 +259,21 @@ const interactiveObservable = navigationEventObservable.pipe(
         var streamlinedObject = Object.assign(
             {},
             {
-                pageStatus: navObject.eventType,
+                command: navObject.eventType,
                 url: navObject.url,
                 timestamp: Date.now(),
+                signal: 'web navigation',
             }
         );
         return streamlinedObject;
     }),
     //log the arrival of the DomContentLoaded event
-    tap((navObject) => console.log(`Test Suite: ${navObject.pageStatus} Observer Emits: ${JSON.stringify(navObject)}`)),
-    //then report to the console
     tap((navObject) =>
-        sendConsoleMessage(
-            `Document object model content is loaded at <a target="_blank" href="${navObject.url}">${navObject.url}</a>`
-        )
+        console.log(`Test Suite: Navigation ${navObject.command} Observer Emits: ${JSON.stringify(navObject)}`)
     )
 );
 
-const completeObservable = navigationEventObservable.pipe(
+const completeNavigationObservable = navigationEventObservable.pipe(
     //filter it for the interactive messages only
     filter((navObject) => navObject.eventType == 'onCompleted'),
     //add a timestamp as it passes by
@@ -261,18 +281,41 @@ const completeObservable = navigationEventObservable.pipe(
         var streamlinedObject = Object.assign(
             {},
             {
-                pageStatus: navObject.eventType,
+                command: navObject.eventType,
                 url: navObject.url,
                 timestamp: Date.now(),
+                signal: 'web navigation',
             }
         );
         return streamlinedObject;
     }),
     //log the arrival of the window load event
-    tap((navObject) => console.log(`Test Suite: ${navObject.pageStatus} Observer Emits: ${JSON.stringify(navObject)}`)),
-    //then report to the console
     tap((navObject) =>
-        sendConsoleMessage(`Page load is complete at <a target="_blank" href="${navObject.url}">${navObject.url}</a>`)
+        console.log(`Test Suite: Navigation ${navObject.command} Observer Emits: ${JSON.stringify(navObject)}`)
+    )
+);
+
+//FILTERED OBSERVABLES - MESSAGE EVENTS
+
+const interactiveMessagingObservable = messagingObservable.pipe(
+    //filter it for the DomContentLoaded events only
+    filter((msgObject) => msgObject.request.command == 'onDOMContentLoaded'),
+    //then map it to the request only, which is an object containing only the sent fields
+    map((msgObject) => msgObject.request),
+    //log the arrival of the DomContentLoaded event
+    tap((msgObject) =>
+        console.log(`Test Suite: Messaging ${msgObject.command} Observer Emits: ${JSON.stringify(msgObject)}`)
+    )
+);
+
+const completeMessagingObservable = messagingObservable.pipe(
+    //filter it for the DomContentLoaded events only
+    filter((msgObject) => msgObject.request.command == 'onCompleted'),
+    //then map it to the request only, which is an object containing only the sent fields
+    map((msgObject) => msgObject.request),
+    //log the arrival of the window load event
+    tap((msgObject) =>
+        console.log(`Test Suite: Messaging ${msgObject.command} Observer Emits: ${JSON.stringify(msgObject)}`)
     )
 );
 
@@ -328,6 +371,30 @@ const resourceTimingObservable = debuggerEventObservable.pipe(
     3. COMBINED, FILTERED RAW DATA OBSERVABLES
 
 */
+
+//COMBINE THE TWO EVENT LISTENERS FOR FAILOVER
+
+const interactiveObservable = merge(interactiveNavigationObservable, interactiveMessagingObservable).pipe(
+    //we only take one
+    take(1),
+    //and we report which one
+    tap((obj) =>
+        sendConsoleMessage(
+            `DOM loaded signal from ${obj.signal} at <a target="_blank" href="${obj.url}">${obj.url}</a>`
+        )
+    )
+);
+
+const completeObservable = merge(completeNavigationObservable, completeMessagingObservable).pipe(
+    //we only take one
+    take(1),
+    //and we report which one
+    tap((obj) =>
+        sendConsoleMessage(
+            `Page complete signal from ${obj.signal} at <a target="_blank" href="${obj.url}">${obj.url}</a>`
+        )
+    )
+);
 
 //COMBINE THE TWO DATA USAGE OBSERVABLES FOR A COMPLETE PICTURE
 
