@@ -12,7 +12,7 @@ import './virtualGrid.css';
 //set up the context provider to share the setSize function and changes to window or container width
 export const VirtualGridContext = createContext({});
 
-export const VirtualGrid = ({ gridRef, rowData }) => {
+export const VirtualGrid = ({ gridRef, rowData, columnWidths }) => {
     //we need to keep a memory of the row heights which we keep in a lookup object
     const sizeMap = useRef({});
     //then we have a function that we keep in memory that allows for the updating of the row height
@@ -54,7 +54,8 @@ export const VirtualGrid = ({ gridRef, rowData }) => {
                                 width={width}
                                 columnCount={rowData[0].length}
                                 columnWidth={(index) =>
-                                    Math.floor(width / rowData[0].length)
+                                    //if we have a column widths array then pass the value from the array, otherwise equal
+                                    columnWidths.length ? columnWidths[index] : Math.floor(width / rowData[0].length)
                                 }
                                 rowCount={rowData.length}
                                 rowHeight={getSize}
@@ -64,20 +65,9 @@ export const VirtualGrid = ({ gridRef, rowData }) => {
                             >
                                 {({ columnIndex, data, rowIndex, style }) => (
                                     // react-window work by absolutely positioning the list items (via an inline style), so don't forget to attach it to the DOM element you render!
-                                    <div
-                                        style={style}
-                                        className={
-                                            rowIndex % 2
-                                                ? 'GridItemOdd'
-                                                : 'GridItemEven'
-                                        }
-                                    >
+                                    <div style={style} className={rowIndex % 2 ? 'GridItemOdd' : 'GridItemEven'}>
                                         {/* Other styles added at component level */}
-                                        <VirtualGridCell
-                                            columnIndex={columnIndex}
-                                            data={data}
-                                            rowIndex={rowIndex}
-                                        />
+                                        <VirtualGridCell columnIndex={columnIndex} data={data} rowIndex={rowIndex} />
                                     </div>
                                 )}
                             </Grid>
@@ -94,4 +84,8 @@ export const VirtualGrid = ({ gridRef, rowData }) => {
             </div>
         </VirtualGridContext.Provider>
     );
+};
+
+VirtualGrid.defaultProps = {
+    columnWidths: [],
 };

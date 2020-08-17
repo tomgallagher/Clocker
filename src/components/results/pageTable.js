@@ -1,4 +1,5 @@
 import React from 'react';
+import { runInAction } from 'mobx';
 import { observer } from 'mobx-react';
 import { useStores } from './../../hooks/useStores';
 import { SemanticTable } from './../../components/tables/table';
@@ -7,14 +8,17 @@ export const PageTable = observer(() => {
     //get the settings to see if we have any saved layouts
     const { JobStore, Settings } = useStores();
     //get the activeJob
-    const activeJob = JobStore.jobs.length
-        ? JobStore.jobs[JobStore.activeIndex]
-        : JobStore.placeholderJob;
+    const activeJob = JobStore.jobs.length ? JobStore.jobs[JobStore.activeIndex] : JobStore.placeholderJob;
 
     //then we have the custom row click
     const handleRowClick = (row) => {
         //here we can use the row info to search our pages and then provide further information, such as showing the screenshot in the sidebar
         console.log(row);
+        runInAction(() => {
+            Settings.activePageIndex = activeJob.pages.findIndex((page) => page.url === row.url);
+            Settings.sidebar = 'showPageDetail';
+            Settings.showSidebar = true;
+        });
     };
 
     // columns are headers with the accessor, referring to the "key" in the data

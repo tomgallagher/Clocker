@@ -20,6 +20,7 @@ export const SidebarItem = (props) => {
                     flexDirection: 'column',
                     paddingLeft: '10px',
                     paddingRight: '10px',
+                    scroll: 'auto',
                 }}
             >
                 {props.children}

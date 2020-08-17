@@ -278,6 +278,8 @@ export class Page {
             scriptRequestsAverage: 0,
             cssLoadAverage: 0,
             cssRequestsAverage: 0,
+            //then we save the minor resources as well
+            minorResources: {},
         };
 
         // create a new object with the defaults over-ridden by the options passed in

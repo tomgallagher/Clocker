@@ -4,6 +4,7 @@ import { useStores } from './../hooks/useStores';
 import { SidebarItem } from './../components/sidebarItem';
 import { LoadCustomList } from './../components/settings/sidebar/loadCustomList';
 import { SaveCustomList } from './../components/settings/sidebar/saveCustomList';
+import { PageDetail } from './../components/results/sidebar/pageDetail';
 
 export const SidebarContent = () => {
     const { Settings } = useStores();
@@ -20,6 +21,13 @@ export const SidebarContent = () => {
                 <SidebarItem title='Save current test pages into custom list'>
                     {/* this forces the reload of the component so we can have form resets etc. */}
                     {Settings.showSidebar ? <SaveCustomList /> : null}
+                </SidebarItem>
+            );
+        case 'showPageDetail':
+            return (
+                <SidebarItem title='Page detail'>
+                    {/* this forces the reload of the component so we can have form resets etc. */}
+                    {Settings.showSidebar ? <PageDetail /> : null}
                 </SidebarItem>
             );
         default:

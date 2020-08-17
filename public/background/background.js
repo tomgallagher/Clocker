@@ -390,8 +390,8 @@ const resizeScreenshot = (dataURL) => {
         const sourceImage = new Image();
         sourceImage.onload = () => {
             //set the maximum we want, let's say 500 in either direction
-            const maxWidth = 400;
-            const maxHeight = 400;
+            const maxWidth = 600;
+            const maxHeight = 600;
             //then we get the natural width and height of the image
             const srcWidth = sourceImage.naturalWidth;
             const srcHeight = sourceImage.naturalHeight;

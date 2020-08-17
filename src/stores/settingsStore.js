@@ -15,6 +15,7 @@ export class Settings {
             withServiceWorker: true,
             //UI settings
             customUrlLists: [],
+            activePageIndex: null,
             sidebar: 'default',
             showSidebar: false,
             themeBackground: null,
@@ -65,6 +66,7 @@ decorate(Settings, {
     withCache: observable,
     withServiceWorker: observable,
     customUrlLists: observable,
+    activePageIndex: observable,
     sidebar: observable,
     showSidebar: observable,
     settingsLayouts: observable,

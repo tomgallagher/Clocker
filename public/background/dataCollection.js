@@ -67,7 +67,12 @@ const onWebRequestErrorObservable = fromEventPattern(
     // initiator <string>, timeStamp: <double>, fromCache: <boolean>, error: <string>, responseHeaders: <HttpHeaders array> }
     (requestInfo) => requestInfo
     //and this is shared amongst many subscribers
-).pipe(startWith(false), share());
+).pipe(
+    //start with an empty object to ensure that zip emits
+    startWith({ type: 'dummyError' }),
+    //then share
+    share()
+);
 //SOURCE OBSERVABLES - NAVIGATION EVENTS
 
 //THIS TURNS ALL NAVIGATION EVENTS INTO AN OBSERVABLE
@@ -434,17 +439,16 @@ const masterDataObservable = streamlinedOnBeforeRequest.pipe(
                 ),
                 //make sure we know when errors happen - when resources are blocked, or otherwise fail to load
                 onWebRequestErrorObservable.pipe(
+                    //make sure we only take certain error fields
+                    map((error) => ({ type: error.type, url: error.url, error: error.error })),
                     //for the time being we are just collecting the error objects into an array,
-                    scan(
-                        (errorArray, currentError) => [
-                            //spread the contents of the previous array
-                            ...errorArray,
-                            //then add the current error object
-                            currentError,
-                        ],
+                    scan((errorArray, currentError) => {
+                        //add the error to the error array
+                        errorArray.push(currentError);
+                        //then return the array for next scan
+                        return errorArray;
                         //seed with the initial array
-                        []
-                    )
+                    }, [])
                 ),
                 //this combines byte load output from debugger network events and onWebRequestComplete iframes, returns a lookup object with request IDs
                 combinedDataUsageObservable.pipe(
@@ -502,9 +506,9 @@ const masterDataObservable = streamlinedOnBeforeRequest.pipe(
                 dataUsageArray: Object.values(dataUsageLookupObject),
                 requestCount: Object.values(dataUsageLookupObject).length,
                 headerTimingsArray: headersTimingArray,
-                //keeping track of errors - filter out the false value we start with to ensure emission of zip
-                errorArray: onErrorArray.filter(Boolean),
-                errorCount: onErrorArray.filter(Boolean).length,
+                //keeping track of errors - filter out the empty object value we start with to ensure emission of zip
+                errorArray: onErrorArray.filter((error) => error.type !== 'dummyError'),
+                errorCount: onErrorArray.filter((error) => error.type !== 'dummyError').length,
             });
             //then we need to do some work to divide everything in the data usage lookup object according to resource type
             //loop through and allocate to arrays
