@@ -7,7 +7,7 @@ export class Settings {
         //always use the default settings
         var defaults = {
             //test settings
-            websites: ['https://turbobrowser.eu/'],
+            websites: [],
             bandwidth: 1.5,
             latency: 40,
             pageIterations: 2,

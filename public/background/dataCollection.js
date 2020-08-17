@@ -421,7 +421,7 @@ const masterDataObservable = streamlinedOnBeforeRequest.pipe(
                     filter(
                         (obj) =>
                             //this can be a source of bugs when http site in our text file changes to https as the event will never fire
-                            obj.url.includes(requestObj.url) &&
+                            new URL(obj.url).origin === new URL(requestObj.url).origin &&
                             //we only want events that happen after the start signalled by the onBeforeRequest
                             obj.timestamp > requestObj.timestamp
                     )
@@ -430,7 +430,7 @@ const masterDataObservable = streamlinedOnBeforeRequest.pipe(
                 completeObservable.pipe(
                     filter(
                         (obj) =>
-                            obj.url.includes(requestObj.url) &&
+                            new URL(obj.url).origin === new URL(requestObj.url).origin &&
                             //we only want events that happen after the start signalled by the onBeforeRequest
                             obj.timestamp > requestObj.timestamp
                     ),

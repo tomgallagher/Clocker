@@ -37,21 +37,6 @@ export const PageDetail = observer(() => {
         ],
     };
 
-    const testErrorArray = [
-        {
-            0: [
-                { url: 'somefakeurl1', type: 'script', error: 'some fake error reason' },
-                { url: 'somefakeurl2', type: 'stylesheet', error: 'some fake error reason' },
-            ],
-        },
-        {
-            1: [
-                { url: 'somefakeur3', type: 'image', error: 'some fake error reason' },
-                { url: 'somefakeurl4', type: 'script', error: 'some fake error reason' },
-            ],
-        },
-    ];
-
     return (
         <>
             <Header as='h4' content={page.url} />

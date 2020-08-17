@@ -8,7 +8,7 @@ https://www.bbc.co.uk/news
 https://www.premierleague.com/
 https://www.ft.com/
 https://edition.cnn.com/
-https://www.bet365.com/en/
+https://www.bet365.com/
 https://www.bbc.co.uk/weather
 https://www.skysports.com/football
 https://www.instagram.com/
@@ -31,7 +31,7 @@ https://www.espncricinfo.com/
 https://www.asos.com/
 https://www.leboncoin.fr/
 https://www.marmiton.org/
-http://www.meteofrance.com/accueil
+http://meteofrance.com/
 https://www.fnac.com/
 https://www.laposte.fr/
 https://www.sfr.fr/

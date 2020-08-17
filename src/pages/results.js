@@ -63,6 +63,7 @@ export const Results = () => {
             case 'Abort':
                 SendChromeMessage({ command: 'abortTest' });
                 break;
+            default:
         }
     };
 

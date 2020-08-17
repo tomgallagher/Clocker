@@ -1,13 +1,5 @@
 import React, { useState } from 'react';
-import {
-    Segment,
-    Header,
-    Grid,
-    Image,
-    Button,
-    Divider,
-    Message,
-} from 'semantic-ui-react';
+import { Segment, Header, Grid, Image, Button, Divider, Message } from 'semantic-ui-react';
 import { useHistory } from 'react-router-dom';
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
@@ -63,8 +55,8 @@ export const Banner = observer(() => {
                         </Header>
 
                         <Header as='h3'>
-                            Performance analysis of Chromium-based browsers and{' '}
-                            <nobr>content-blocking</nobr> extensions.
+                            Performance analysis of Chromium-based browsers and <nobr>content-blocking</nobr>{' '}
+                            extensions.
                         </Header>
 
                         <Divider hidden></Divider>
@@ -73,11 +65,7 @@ export const Banner = observer(() => {
                             Start
                         </Button>
 
-                        {showMessage ? (
-                            <Message size='tiny'>
-                                Urls must be added to settings
-                            </Message>
-                        ) : null}
+                        {showMessage ? <Message size='tiny'>Urls must be added to settings</Message> : null}
                     </Grid.Column>
 
                     <Grid.Column width={6} floated='right'>

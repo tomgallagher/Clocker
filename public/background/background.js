@@ -25,7 +25,6 @@ chrome.browserAction.onClicked.addListener(function () {
 });
 
 chrome.runtime.onMessage.addListener((request) => {
-    console.log(request);
     switch (request.command) {
         case 'forwardConsoleMessage':
             chrome.runtime.sendMessage({
@@ -70,6 +69,8 @@ const runJob = (payload) => {
         .pipe(
             //first map to the background js job class so we have everything we need to run the test
             map((payload) => new Job(payload)),
+            //lets console log the job so we can keep an eye on things
+            tap((job) => console.log(job)),
             //then open the new tab and attach tab id to the job
             switchMap(
                 (_) => from(openTestTab()),
@@ -298,9 +299,19 @@ const runIteration = (page) => {
                     }
                 ),
                 //only take one before killing the stream and unsubscribing from all inputs into the combineLatest stream
-                take(1)
-
+                take(1),
                 //then this is where we kill the service worker if that's what's ordered
+                switchMap(
+                    (iteration) =>
+                        from(
+                            page.withServiceWorker
+                                ? //if the user has chosen to keep service workers active then we just resolve
+                                  Promise.resolve()
+                                : //otherwise this orders the examination of service workers and potentially stops them
+                                  stopServiceWorker(iteration.tabId)
+                        ),
+                    (iteration) => iteration
+                )
             )
             //then resolve
             .subscribe((iteration) => resolve(iteration));
@@ -666,6 +677,21 @@ const navigateAndScroll = (tabId, url) => {
 };
 
 //UTILS
+
+const stopServiceWorker = (tabId) => {
+    return new Promise((resolve) => {
+        chrome.tabs.sendMessage(tabId, { command: 'STOP_SERVICE_WORKER' }, (response) => {
+            //handle any errors that might arise but do not let it stop the test
+            if (chrome.runtime.lastError) {
+                console.log(`TEST ERROR: Stop Service Worker: ${chrome.runtime.lastError.message}`);
+                resolve();
+                return;
+            }
+            sendConsoleMessage(`${response.message}`);
+            resolve();
+        });
+    });
+};
 
 const sendConsoleMessage = (text) => {
     return new Promise((resolve) => {

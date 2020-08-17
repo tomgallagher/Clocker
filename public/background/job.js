@@ -12,19 +12,19 @@ class Job {
             //the job object needs to have a memory of the tab being run by the debugger
             tabId: null,
             //take the websites from the settings page
-            websites: userInterfaceJob.settings.websites || [],
+            websites: userInterfaceJob.settings.websites,
             //bandwidth comes from user interface as megabits per second, we need to adjust that to create download and upload, which has to be in bytes
             //A megabit (decimal) contains 1000 * 2 bits. This is the common usage compared to a megabit (binary) or a mebibit that contains 1024 * 2 bits.
-            bandwidth_down: Math.round((userInterfaceJob.settings.bandwidth * 1000 ** 2) / 8) || 187500,
+            bandwidth_down: Math.round((userInterfaceJob.settings.bandwidth * 1000 ** 2) / 8),
             //we make the assumption that upload speeds are going to be 1/10 of download speeds
-            bandwidth_up: Math.round((userInterfaceJob.settings.bandwidth * 1000 ** 2) / 8 / 10) || 18750,
+            bandwidth_up: Math.round((userInterfaceJob.settings.bandwidth * 1000 ** 2) / 8 / 10),
             //latency is saved as a number and is required as a number
-            latency: userInterfaceJob.settings.latency || 40,
+            latency: userInterfaceJob.settings.latency,
             //page iterations need to be part of the test
-            pageIterations: userInterfaceJob.settings.pageIterations || 1,
+            pageIterations: userInterfaceJob.settings.pageIterations,
             //with cache and with service worker needs to be part of the test
-            withCache: userInterfaceJob.settings.withCache || false,
-            withServiceWorker: userInterfaceJob.settings.withServiceWorker || true,
+            withCache: userInterfaceJob.settings.withCache,
+            withServiceWorker: userInterfaceJob.settings.withServiceWorker,
         };
 
         // then we can take the name, id, createdAt and updatedAt values from the user interface job
