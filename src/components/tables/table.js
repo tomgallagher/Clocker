@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { Table, Menu, Icon, Select } from 'semantic-ui-react';
 import { useTable, useSortBy, usePagination } from 'react-table';
 import { CSVLink } from 'react-csv';
@@ -6,14 +6,7 @@ import { CSVLink } from 'react-csv';
 import './table.css';
 
 //we want to split the table props from our other props, so we can just pass the table props to react-table
-export const SemanticTable = ({
-    headers,
-    dataset,
-    rowClick,
-    mostRecent,
-    filename,
-    ...props
-}) => {
+export const SemanticTable = ({ headers, dataset, rowClick, filename, ...props }) => {
     //make sure we memo-ize the incoming data so we can work it
     const columns = useMemo(() => headers, [headers]);
     const data = useMemo(() => dataset, [dataset]);
@@ -42,14 +35,7 @@ export const SemanticTable = ({
         previousPage,
         setPageSize,
         state: { pageIndex, pageSize },
-    } = useTable(
-        { columns, data, initialState: { pageIndex: 0 } },
-        useSortBy,
-        usePagination
-    );
-
-    //make sure we are always showing the most recent additions, if that's requested
-    useEffect(() => (mostRecent ? gotoPage(pageCount - 1) : null));
+    } = useTable({ columns, data, initialState: { pageIndex: 0 } }, useSortBy, usePagination);
 
     return (
         <div className='tableContainer'>
@@ -61,9 +47,7 @@ export const SemanticTable = ({
                             // Loop over the header rows
                             headerGroups.map((headerGroup) => (
                                 // Apply the header row props
-                                <Table.Row
-                                    {...headerGroup.getHeaderGroupProps()}
-                                >
+                                <Table.Row {...headerGroup.getHeaderGroupProps()}>
                                     {
                                         // Loop over the headers in each row
                                         headerGroup.headers.map((column) => (
@@ -104,18 +88,13 @@ export const SemanticTable = ({
                                 prepareRow(row);
                                 return (
                                     // Apply the row props
-                                    <Table.Row
-                                        {...row.getRowProps()}
-                                        onClick={() => rowClick(row.original)}
-                                    >
+                                    <Table.Row {...row.getRowProps()} onClick={() => rowClick(row.original)}>
                                         {
                                             // Loop over the rows cells
                                             row.cells.map((cell) => {
                                                 // Apply the cell props
                                                 return (
-                                                    <Table.Cell
-                                                        {...cell.getCellProps()}
-                                                    >
+                                                    <Table.Cell {...cell.getCellProps()}>
                                                         {
                                                             // Render the cell contents
                                                             cell.render('Cell')
@@ -133,28 +112,17 @@ export const SemanticTable = ({
                     {dataset.length > 10 && (
                         <Table.Footer>
                             <Table.Row>
-                                <Table.HeaderCell
-                                    colSpan={visibleColumns.length.toString()}
-                                >
+                                <Table.HeaderCell colSpan={visibleColumns.length.toString()}>
                                     <Menu floated='left'>
                                         <Menu.Item as='a'>
-                                            <CSVLink
-                                                data={data}
-                                                headers={csvHeaders}
-                                                filename={`${filename}.csv`}
-                                            >
+                                            <CSVLink data={data} headers={csvHeaders} filename={`${filename}.csv`}>
                                                 CSV
                                             </CSVLink>
                                         </Menu.Item>
                                     </Menu>
 
                                     <Menu floated='right' pagination>
-                                        <Menu.Item
-                                            as='a'
-                                            icon
-                                            onClick={() => gotoPage(0)}
-                                            disabled={!canPreviousPage}
-                                        >
+                                        <Menu.Item as='a' icon onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
                                             <Icon name='chevron left' />
                                             <Icon name='chevron left' />
                                         </Menu.Item>
@@ -166,28 +134,20 @@ export const SemanticTable = ({
                                         >
                                             <Icon name='chevron left' />
                                         </Menu.Item>
-                                        <Menu.Item
-                                            as='a'
-                                            icon
-                                            onClick={() => nextPage()}
-                                            disabled={!canNextPage}
-                                        >
+                                        <Menu.Item as='a' icon onClick={() => nextPage()} disabled={!canNextPage}>
                                             <Icon name='chevron right' />
                                         </Menu.Item>
                                         <Menu.Item
                                             as='a'
                                             icon
-                                            onClick={() =>
-                                                gotoPage(pageCount - 1)
-                                            }
+                                            onClick={() => gotoPage(pageCount - 1)}
                                             disabled={!canNextPage}
                                         >
                                             <Icon name='chevron right' />
                                             <Icon name='chevron right' />
                                         </Menu.Item>
                                         <Menu.Item as='a'>
-                                            Page {pageIndex + 1} of{' '}
-                                            {pageOptions.length}
+                                            Page {pageIndex + 1} of {pageOptions.length}
                                         </Menu.Item>
 
                                         <Select
@@ -256,8 +216,6 @@ SemanticTable.defaultProps = {
     textAlign: 'center',
     //then we have the row click handler as empty function by default
     rowClick: () => {},
-    //then we have a toggle for showing the most recent
-    mostRecent: false,
     //then a default prop for filename
     filename: 'table.csv',
 };

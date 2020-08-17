@@ -7,21 +7,15 @@ export const ProgressBar = observer(() => {
     //get the settings to see if we have any saved layouts
     const { JobStore } = useStores();
     //get the activeJob
-    const activeJob = JobStore.jobs.length
-        ? JobStore.jobs[JobStore.activeIndex]
-        : JobStore.placeholderJob;
+    const activeJob = JobStore.jobs.length ? JobStore.jobs[JobStore.activeIndex] : JobStore.placeholderJob;
     //get the current page count
     const pageCount = activeJob.pages.length;
     //then we will want to get the number of urls in the settings of the active job as well
-    const pageTarget = 20;
+    const pageTarget = activeJob.settings.websites.length;
 
     return (
         <div className='internal-grid-content-single-row'>
-            <Progress
-                percent={Math.round((pageCount / pageTarget) * 100)}
-                autoSuccess
-                progress
-            />
+            <Progress percent={Math.round((pageCount / pageTarget) * 100)} autoSuccess progress />
         </div>
     );
 });

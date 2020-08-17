@@ -50,7 +50,6 @@ export const PageTable = observer(() => {
                 sortable={true}
                 selectable={true}
                 rowClick={handleRowClick}
-                mostRecent={true}
                 filename={Settings.toString}
             />
         </div>
