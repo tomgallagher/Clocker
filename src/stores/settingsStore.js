@@ -12,6 +12,7 @@ export class Settings {
         this.pageIterations = 2;
         this.withCache = false;
         this.withServiceWorker = true;
+        this.screenshotWidth = 600;
         //UI settings
         this.customUrlLists = [];
         this.activePageIndex = null;
@@ -66,12 +67,15 @@ export class Settings {
 
 //then add the decorations to make the relevant features of the list observable
 decorate(Settings, {
+    //test settings
     websites: observable,
     bandwidth: observable,
     latency: observable,
     pageIterations: observable,
     withCache: observable,
     withServiceWorker: observable,
+    screenshotWidth: observable,
+    //UI settings
     customUrlLists: observable,
     activePageIndex: observable,
     isPaused: observable,
@@ -79,6 +83,7 @@ decorate(Settings, {
     showSidebar: observable,
     settingsLayouts: observable,
     resultsLayouts: observable,
+    historyLayouts: observable,
     parsedWebsites: computed,
     toString: computed,
 });

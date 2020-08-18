@@ -120,6 +120,7 @@ const runJob = (payload) => {
                         pageIterations: job.pageIterations,
                         withCache: job.withCache,
                         withServiceWorker: job.withServiceWorker,
+                        screenshotWidth: job.screenshotWidth,
                     })
             ),
             //so here we start actioning the page and this needs to be concat map so it waits for each page to complete
@@ -169,7 +170,7 @@ const runSingleUrl = (page) => {
                 ),
                 //then run the screenshot
                 switchMap(
-                    (page) => from(takeScreenshot(page.tabId, page.url)),
+                    (page) => from(takeScreenshot(page.tabId, page.url, page.screenshotWidth)),
                     (page, dataURL) => {
                         page.screenshot = dataURL;
                         return page;
@@ -380,17 +381,17 @@ const closeTestTab = (tabID) => {
     });
 };
 
-const takeScreenshot = (tabID, url) => {
+const takeScreenshot = (tabID, url, screenshotWidth) => {
     return new Promise((resolve) => {
         //first we need to get the active tab
         getActiveTabId().then((currentTabId) => {
             if (currentTabId === tabID) {
                 //if we are on the job tab then we can just take the screenshot and resolve with the data url
-                Screenshot(url).then((dataURL) => resolve(dataURL));
+                Screenshot(url, screenshotWidth).then((dataURL) => resolve(dataURL));
             } else {
                 //otherwise we need to switch to the job tab, take the screenshot, resolve with the data url and then switch back
                 switchToTab(tabID)
-                    .then(() => Screenshot(url))
+                    .then(() => Screenshot(url, screenshotWidth))
                     .then((dataURL) => resolve(dataURL))
                     .then(() => switchToTab(currentTabId));
             }
@@ -398,7 +399,7 @@ const takeScreenshot = (tabID, url) => {
     });
 };
 
-const Screenshot = (url) => {
+const Screenshot = (url, screenshotWidth) => {
     return new Promise((resolve) => {
         chrome.tabs.captureVisibleTab((dataURL) => {
             if (chrome.runtime.lastError) {
@@ -406,20 +407,20 @@ const Screenshot = (url) => {
                 resolve('');
                 return;
             }
-            resizeScreenshot(dataURL)
+            resizeScreenshot(dataURL, screenshotWidth)
                 .then((smallerDataUrl) => resolve(smallerDataUrl))
                 .then(() => sendConsoleMessage(`Screenshot saved for <a target="_blank" href="${url}">${url}</a>`));
         });
     });
 };
 
-const resizeScreenshot = (dataURL) => {
+const resizeScreenshot = (dataURL, screenshotWidth) => {
     return new Promise((resolve) => {
         const sourceImage = new Image();
         sourceImage.onload = () => {
-            //set the maximum we want, let's say 500 in either direction
-            const maxWidth = 600;
-            const maxHeight = 600;
+            //set the maximum we want, defined by user
+            const maxWidth = screenshotWidth;
+            const maxHeight = screenshotWidth;
             //then we get the natural width and height of the image
             const srcWidth = sourceImage.naturalWidth;
             const srcHeight = sourceImage.naturalHeight;

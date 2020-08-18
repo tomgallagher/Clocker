@@ -12,6 +12,7 @@ import { WebsiteSelector } from './../components/settings/websiteSelector';
 import { PageIterations } from './../components/settings/pageIterations';
 import { WithCache } from './../components/settings/withCache';
 import { WithServiceWorker } from './../components/settings/withServiceWorker';
+import { Screenshot } from './../components/settings/screenshot';
 
 // <ResponsiveReactGridLayout> takes width to calculate positions on drag events.
 // WidthProvider can be used to automatically determine width upon initialization and window resize events.
@@ -29,20 +30,14 @@ export const SettingsPage = () => {
     return (
         <>
             <Container text textAlign='center'>
-                <PageTitle
-                    title='Settings'
-                    subtitle='Change test job settings'
-                    dividing={false}
-                />
+                <PageTitle title='Settings' subtitle='Change test job settings' dividing={false} />
             </Container>
             <Container fluid>
                 <ResponsiveGridLayout
                     className='layout'
                     draggableHandle='.draggableHandle'
                     layouts={
-                        Object.keys(Settings.settingsLayouts).length
-                            ? Settings.settingsLayouts
-                            : DefaultSettingsLayouts
+                        Object.keys(Settings.settingsLayouts).length ? Settings.settingsLayouts : DefaultSettingsLayouts
                     }
                     breakpoints={{
                         lg: 1200,
@@ -56,11 +51,6 @@ export const SettingsPage = () => {
                     containerPadding={[10, 10]}
                     onLayoutChange={handleLayoutChange}
                 >
-                    <div key='bandwidth'>
-                        <GridItem header='Bandwidth'>
-                            <Bandwidth />
-                        </GridItem>
-                    </div>
                     <div key='latency'>
                         <GridItem header='Latency'>
                             <Latency />
@@ -71,9 +61,20 @@ export const SettingsPage = () => {
                             <WebsiteSelector />
                         </GridItem>
                     </div>
+
                     <div key='pageIterations'>
                         <GridItem header='Page Iterations'>
                             <PageIterations />
+                        </GridItem>
+                    </div>
+                    <div key='bandwidth'>
+                        <GridItem header='Bandwidth'>
+                            <Bandwidth />
+                        </GridItem>
+                    </div>
+                    <div key='screenshot'>
+                        <GridItem header='Screenshot Quality'>
+                            <Screenshot />
                         </GridItem>
                     </div>
                     <div key='withCache'>

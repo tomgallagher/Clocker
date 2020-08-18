@@ -25,6 +25,8 @@ class Job {
             //with cache and with service worker needs to be part of the test
             withCache: userInterfaceJob.settings.withCache,
             withServiceWorker: userInterfaceJob.settings.withServiceWorker,
+            //and the screenshot quality
+            screenshotWidth: userInterfaceJob.settings.screenshotWidth,
         };
 
         // then we can take the name, id, createdAt and updatedAt values from the user interface job

@@ -10,6 +10,7 @@ class Page {
             pageIterations: 1,
             withCache: false,
             withServiceWorker: true,
+            screenshotWidth: 600,
             //then the stats
             dclAverage: 0,
             completeAverage: 0,

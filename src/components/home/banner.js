@@ -19,11 +19,13 @@ export const Banner = observer(() => {
             //get the settings info we care about as partial
             const {
                 customUrlLists,
+                isPaused,
                 sidebar,
                 showSidebar,
                 themeBackground,
                 settingsLayouts,
                 resultsLayouts,
+                historyLayouts,
                 ...partialSettings
             } = Settings;
             //then create the job
