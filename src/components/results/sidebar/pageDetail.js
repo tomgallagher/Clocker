@@ -79,7 +79,7 @@ export const PageDetail = observer(() => {
             />
             <Header as='h4' content='Blocked resources / errors' />
             <Statistic label='blocked / errors' value={page.minorResources.errorCount} />
-            <ErrorReport errorArray={page.minorResources.errorArray} />
+            {page.minorResources.errorCount > 0 ? <ErrorReport errorArray={page.minorResources.errorArray} /> : null}
         </>
     );
 });

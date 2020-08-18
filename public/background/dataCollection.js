@@ -324,6 +324,19 @@ const completeMessagingObservable = messagingObservable.pipe(
     )
 );
 
+//PAUSE RESUME OBSERVABLE RETURNS CURRENT STATE OF UI COMMAND
+
+const pauseResume$ = merge(
+    messagingObservable.pipe(
+        filter((msg) => msg.request.command == 'pauseTest' || msg.request.command == 'abortTest'),
+        mapTo(false)
+    ),
+    messagingObservable.pipe(
+        filter((msg) => msg.request.command == 'resumeTest'),
+        mapTo(true)
+    )
+).pipe(startWith(true), shareReplay(1));
+
 //FILTERED OBSERVABLES = DEBUGGER EVENTS
 
 //THEN WE ONLY WANT CERTAIN NETWORK EVENTS

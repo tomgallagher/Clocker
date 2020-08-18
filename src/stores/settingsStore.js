@@ -15,6 +15,7 @@ export class Settings {
         //UI settings
         this.customUrlLists = [];
         this.activePageIndex = null;
+        this.isPaused = false;
         this.sidebar = 'default';
         this.showSidebar = false;
         this.themeBackground = null;
@@ -73,6 +74,7 @@ decorate(Settings, {
     withServiceWorker: observable,
     customUrlLists: observable,
     activePageIndex: observable,
+    isPaused: observable,
     sidebar: observable,
     showSidebar: observable,
     settingsLayouts: observable,

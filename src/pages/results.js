@@ -1,6 +1,6 @@
 import React from 'react';
-import { Container, Button } from 'semantic-ui-react';
-import { runInAction, toJS } from 'mobx';
+import { Container } from 'semantic-ui-react';
+import { runInAction } from 'mobx';
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import { useStores } from './../hooks/useStores';
 import { DefaultResultsLayouts } from './../components/results/resultsLayout';
@@ -14,7 +14,7 @@ import { ConsoleList } from './../components/results/consoleList';
 import { Timings } from './../components/results/timings';
 import { LoadChart } from '../components/charts/loadChart';
 import { RequestChart } from '../components/charts/requestChart';
-import { SendChromeMessage } from './../utils/chromeFunctions';
+import { ActionButtons } from '../components/results/actionButtons';
 
 /*
 //for testing only
@@ -52,39 +52,9 @@ export const Results = () => {
         runInAction(() => (Settings.resultsLayouts = allLayouts));
     };
 
-    const handleButtonClick = (e, { name }) => {
-        switch (name) {
-            case 'Pause':
-                SendChromeMessage({ command: 'pauseTest' });
-                break;
-            case 'Resume':
-                SendChromeMessage({ command: 'resumeTest' });
-                break;
-            case 'Abort':
-                //first we send the message to abort the test, which should then fire null into the mobx listener streams
-                SendChromeMessage({ command: 'abortTest' });
-                //then we need to reset the listeners after a short delay so we can get the abort message
-                setTimeout(() => JobStore.resetListeners(), 100);
-                break;
-            default:
-        }
-    };
-
     return (
         <>
-            <Button.Group floated='right' size='mini' style={{ marginRight: '10px' }}>
-                <Button name='Pause' color='black' onClick={handleButtonClick}>
-                    Pause
-                </Button>
-                <Button.Or />
-                <Button name='Resume' color='black' onClick={handleButtonClick}>
-                    Resume
-                </Button>
-                <Button.Or />
-                <Button name='Abort' negative onClick={handleButtonClick}>
-                    Abort
-                </Button>
-            </Button.Group>
+            <ActionButtons />
             <Container text textAlign='center'>
                 <PageTitle
                     title='Results'

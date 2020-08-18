@@ -13,6 +13,8 @@ const {
     share,
     take,
     toArray,
+    mapTo,
+    shareReplay,
 } = rxjs.operators;
 
 //we need the active job and the active job observable subscription in global scope
@@ -150,6 +152,21 @@ const runSingleUrl = (page) => {
                         `Computing average page stats across ${page.pageIterations} iterations for <a target="_blank" href="${page.url}">${page.url}</a>`
                     );
                 }),
+                //we need to take the page and return an inner observable, which essentially is a state provider about pause and resume
+                //as we are using concatMap, the application will pause indefinitely until resume is clicked
+                concatMap((page) =>
+                    //this starts as true and can only be changed by pause or abort message
+                    pauseResume$.pipe(
+                        //so we can see the current state for debugging
+                        tap((v) => console.log(`${v ? 'Application running' : 'Application paused'}`)),
+                        // Only emit from the inner observable if true
+                        filter((v) => v),
+                        //we only want one emission as we are switching back to the page
+                        take(1),
+                        //then a simple continuation
+                        switchMap(() => of(page))
+                    )
+                ),
                 //then run the screenshot
                 switchMap(
                     (page) => from(takeScreenshot(page.tabId, page.url)),
