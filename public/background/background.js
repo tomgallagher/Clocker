@@ -385,15 +385,25 @@ const takeScreenshot = (tabID, url, screenshotWidth) => {
     return new Promise((resolve) => {
         //first we need to get the active tab
         getActiveTabId().then((currentTabId) => {
-            if (currentTabId === tabID) {
+            switch (true) {
+                //if we have the dev tools open then we don't want to attempt the screenshot as we just get an error
+                case currentTabId === 0:
+                    resolve(
+                        `https://via.placeholder.com/${screenshotWidth}x${Math.round(
+                            screenshotWidth / 1.77
+                        )}.webp?text=No+screenshot+as+dev+tools+focused`
+                    );
+                    break;
                 //if we are on the job tab then we can just take the screenshot and resolve with the data url
-                Screenshot(url, screenshotWidth).then((dataURL) => resolve(dataURL));
-            } else {
+                case currentTabId === tabID:
+                    Screenshot(url, screenshotWidth).then((dataURL) => resolve(dataURL));
+                    break;
                 //otherwise we need to switch to the job tab, take the screenshot, resolve with the data url and then switch back
-                switchToTab(tabID)
-                    .then(() => Screenshot(url, screenshotWidth))
-                    .then((dataURL) => resolve(dataURL))
-                    .then(() => switchToTab(currentTabId));
+                default:
+                    switchToTab(tabID)
+                        .then(() => Screenshot(url, screenshotWidth))
+                        .then((dataURL) => resolve(dataURL))
+                        .then(() => switchToTab(currentTabId));
             }
         });
     });
