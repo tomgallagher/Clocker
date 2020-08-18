@@ -3,6 +3,7 @@ import { Container } from 'semantic-ui-react';
 import { runInAction } from 'mobx';
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import { useStores } from './../hooks/useStores';
+import { useUnload } from './../hooks/useUnload';
 import { DefaultResultsLayouts } from './../components/results/resultsLayout';
 import { GridItem } from './../components/gridItem';
 import { PageTitle } from './../components/pageTitle.js';
@@ -16,14 +17,6 @@ import { LoadChart } from '../components/charts/loadChart';
 import { RequestChart } from '../components/charts/requestChart';
 import { ActionButtons } from '../components/results/actionButtons';
 
-/*
-//for testing only
-import randomSentence from 'random-sentence';
-import { newPage } from './../__test__/makeData';
-import { useInterval } from './../hooks/useInterval';
-
-*/
-
 // <ResponsiveReactGridLayout> takes width to calculate positions on drag events.
 // WidthProvider can be used to automatically determine width upon initialization and window resize events.
 const ResponsiveGridLayout = WidthProvider(Responsive);
@@ -33,19 +26,13 @@ export const Results = () => {
     const { JobStore, Settings } = useStores();
     //get the activeJob
     const activeJob = JobStore.jobs.length ? JobStore.jobs[JobStore.activeIndex] : JobStore.placeholderJob;
-
-    /*
-    //for testing the console - adds a new message every 2 seconds
-    useInterval(() => {
-        //generate the new console message
-        const text = randomSentence(500, 1500);
-        SendChromeMessage({ command: 'forwardConsoleMessage', message: text });
-        //generate the new page item
-        const page = newPage();
-        SendChromeMessage({ command: 'forwardPageData', payload: page });
-    }, 2000);
-    */
-
+    //when the results page is unloaded we want to reset the various settings to default
+    useUnload(() => {
+        runInAction(() => {
+            Settings.activePageIndex = null;
+            Settings.showSidebar = false;
+        });
+    });
     //then we need to have a save action on the layout change
     const handleLayoutChange = (currentLayout, allLayouts) => {
         console.log(currentLayout);

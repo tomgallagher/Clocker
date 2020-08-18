@@ -13,7 +13,10 @@ export class JobStore {
         //we have the basic attributes of the job store
         this.jobs = [];
         this.activeIndex = 0;
+        //then we have the placeholders so the UI displays with no data
         this.placeholderJob = new Job({});
+        this.placeholderPage = new Page({});
+        //then the loading indicators for when we get the data from the database
         this.isLoading = false;
         this.isLoadError = false;
         //more complex observable to link the rxjs messaging port from chrome into mobx store

@@ -8,7 +8,10 @@ import { ErrorReport } from './errorReport';
 
 export const PageDetail = observer(() => {
     const { JobStore, Settings } = useStores();
-    const page = JobStore.jobs[JobStore.activeIndex].pages[Settings.activePageIndex];
+    //get the activeJob
+    const activeJob = JobStore.jobs.length ? JobStore.jobs[JobStore.activeIndex] : JobStore.placeholderJob;
+    //get the active page
+    const activePage = activeJob.pages.length ? activeJob.pages[Settings.activePageIndex] : JobStore.placeholderPage;
     const data = {
         labels: ['HTML', 'XHR', 'Fetch', 'Websocket'],
         datasets: [
@@ -17,10 +20,10 @@ export const PageDetail = observer(() => {
                 backgroundColor: ColorPalette.stormysky,
                 yAxisID: 'y-axis-1',
                 data: [
-                    page.minorResources.htmlLoadAverage,
-                    page.minorResources.xhrLoadAverage,
-                    page.minorResources.fetchLoadAverage,
-                    page.minorResources.websocketLoadAverage,
+                    activePage.minorResources.htmlLoadAverage,
+                    activePage.minorResources.xhrLoadAverage,
+                    activePage.minorResources.fetchLoadAverage,
+                    activePage.minorResources.websocketLoadAverage,
                 ],
             },
             {
@@ -28,10 +31,10 @@ export const PageDetail = observer(() => {
                 backgroundColor: ColorPalette.eggshell,
                 yAxisID: 'y-axis-2',
                 data: [
-                    page.minorResources.htmlRequestsAverage,
-                    page.minorResources.xhrRequestsAverage,
-                    page.minorResources.fetchRequestsAverage,
-                    page.minorResources.websocketRequestsAverage,
+                    activePage.minorResources.htmlRequestsAverage,
+                    activePage.minorResources.xhrRequestsAverage,
+                    activePage.minorResources.fetchRequestsAverage,
+                    activePage.minorResources.websocketRequestsAverage,
                 ],
             },
         ],
@@ -39,8 +42,8 @@ export const PageDetail = observer(() => {
 
     return (
         <>
-            <Header as='h4' content={page.url} />
-            <Image fluid src={page.screenshot} />
+            <Header as='h4' content={activePage.url} />
+            <Image fluid src={activePage.screenshot} />
             <Header as='h4' content='Minor resources' />
             <Bar
                 data={data}
@@ -78,8 +81,10 @@ export const PageDetail = observer(() => {
                 }}
             />
             <Header as='h4' content='Blocked resources / errors' />
-            <Statistic label='blocked / errors' value={page.minorResources.errorCount} />
-            {page.minorResources.errorCount > 0 ? <ErrorReport errorArray={page.minorResources.errorArray} /> : null}
+            <Statistic label='blocked / errors' value={activePage.minorResources.errorCount} />
+            {activePage.minorResources.errorCount > 0 ? (
+                <ErrorReport errorArray={activePage.minorResources.errorArray} />
+            ) : null}
         </>
     );
 });

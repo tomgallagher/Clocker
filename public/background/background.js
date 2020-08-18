@@ -44,12 +44,13 @@ chrome.runtime.onMessage.addListener((request) => {
             runJob(request.payload);
             break;
         case 'abortTest':
-            //first we stop the subscription, which will prevent any further processing
+            //first we stop the subscription, if there is an active on
             if (activeJobSubscription) {
                 //first we stop the subscription, which will prevent any further processing
                 activeJobSubscription.unsubscribe();
-                //then we close the test tab
+                //then we detach the debugger
                 detachDebugger(activeJob.tabId)
+                    //then we close the test tab
                     .then(() => closeTestTab(activeJob.tabId))
                     .then(() =>
                         //then we send the message
@@ -58,6 +59,20 @@ chrome.runtime.onMessage.addListener((request) => {
             }
             break;
         default:
+    }
+});
+
+//then we want to be responsive to user detaching the debugger, when either the tab is being closed or Chrome DevTools is being invoked for the attached tab.
+chrome.debugger.onDetach.addListener((_, reason) => {
+    //first we stop the subscription, if there is an active on
+    if (activeJobSubscription && reason === 'canceled_by_user') {
+        //first we stop the subscription, which will prevent any further processing
+        activeJobSubscription.unsubscribe();
+        //then we close the test tab
+        closeTestTab(activeJob.tabId).then(() =>
+            //then we send the message
+            sendConsoleMessage(`Aborted Test Job: ${activeJob.id} as debugger detached when ${reason}`)
+        );
     }
 });
 

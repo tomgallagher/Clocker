@@ -23,7 +23,6 @@ export const VirtualGrid = ({ gridRef, rowData, columnWidths }) => {
     }, []);
     //then we have the function to get the size of the row that we pass to the list
     const getSize = useCallback((index) => {
-        console.log(sizeMap);
         return sizeMap.current[index] || 50;
     }, []);
 
