@@ -32,8 +32,18 @@ export class Settings {
     load() {
         //try to get the time data from local storage
         const localData = window.localStorage.getItem('settings_data');
-        //if there is time data, use extendObservable, which can be used to add observable properties to the existing target objects, much like object assign.
-        localData ? extendObservable(this, JSON.parse(localData)) : console.log('No Settings Data in Storage');
+        //if local data then we need to make sure we don't reimport the UI state data
+        if (localData) {
+            //get the object
+            let parsedData = JSON.parse(localData);
+            //then adjust and extend
+            parsedData.activePageIndex = null;
+            parsedData.isPaused = false;
+            parsedData.sidebar = 'default';
+            parsedData.showSidebar = false;
+            //use extendObservable to add observable properties to the existing target objects, much like object assign.
+            extendObservable(this, parsedData);
+        }
     }
 
     save(json) {

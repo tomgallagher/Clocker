@@ -13,7 +13,6 @@ import { History } from './pages/history';
 
 export const App = observer(() => {
     const { Settings } = useStores();
-
     return (
         <div className='appContainer'>
             <Navigation />
@@ -22,9 +21,7 @@ export const App = observer(() => {
                 <Sidebar
                     as={Segment}
                     animation='overlay'
-                    onHide={() =>
-                        runInAction(() => (Settings.showSidebar = false))
-                    }
+                    onHide={() => runInAction(() => (Settings.showSidebar = false))}
                     vertical
                     direction='right'
                     visible={Settings.showSidebar}

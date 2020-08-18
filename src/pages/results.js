@@ -3,7 +3,6 @@ import { Container } from 'semantic-ui-react';
 import { runInAction } from 'mobx';
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import { useStores } from './../hooks/useStores';
-import { useUnload } from './../hooks/useUnload';
 import { DefaultResultsLayouts } from './../components/results/resultsLayout';
 import { GridItem } from './../components/gridItem';
 import { PageTitle } from './../components/pageTitle.js';
@@ -26,13 +25,6 @@ export const Results = () => {
     const { JobStore, Settings } = useStores();
     //get the activeJob
     const activeJob = JobStore.jobs.length ? JobStore.jobs[JobStore.activeIndex] : JobStore.placeholderJob;
-    //when the results page is unloaded we want to reset the various settings to default
-    useUnload(() => {
-        runInAction(() => {
-            Settings.activePageIndex = null;
-            Settings.showSidebar = false;
-        });
-    });
     //then we need to have a save action on the layout change
     const handleLayoutChange = (currentLayout, allLayouts) => {
         console.log(currentLayout);
