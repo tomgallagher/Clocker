@@ -61,7 +61,10 @@ export const Results = () => {
                 SendChromeMessage({ command: 'resumeTest' });
                 break;
             case 'Abort':
+                //first we send the message to abort the test, which should then fire null into the mobx listener streams
                 SendChromeMessage({ command: 'abortTest' });
+                //then we need to reset the listeners after a short delay so we can get the abort message
+                setTimeout(() => JobStore.resetListeners(), 100);
                 break;
             default:
         }

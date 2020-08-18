@@ -1,35 +1,41 @@
-import { observable, extendObservable, toJS, decorate, reaction, computed } from 'mobx';
+import { observable, extendObservable, decorate, computed } from 'mobx';
 import psl from 'psl';
 import { getDateString } from './../utils/strings';
+import { autosave } from './autosave';
 
 export class Settings {
     constructor() {
-        //always use the default settings
-        var defaults = {
-            //test settings
-            websites: [],
-            bandwidth: 1.5,
-            latency: 40,
-            pageIterations: 2,
-            withCache: false,
-            withServiceWorker: true,
-            //UI settings
-            customUrlLists: [],
-            activePageIndex: null,
-            sidebar: 'default',
-            showSidebar: false,
-            themeBackground: null,
-            settingsLayouts: {},
-            resultsLayouts: {},
-        };
+        //test settings
+        this.websites = [];
+        this.bandwidth = 1.5;
+        this.latency = 40;
+        this.pageIterations = 2;
+        this.withCache = false;
+        this.withServiceWorker = true;
+        //UI settings
+        this.customUrlLists = [];
+        this.activePageIndex = null;
+        this.sidebar = 'default';
+        this.showSidebar = false;
+        this.themeBackground = null;
+        this.settingsLayouts = {};
+        this.resultsLayouts = {};
+        this.historyLayouts = {};
+        //load the data from local storage if available
+        this.load();
+        //add the autosave function that will persist the data with a small delay
+        autosave(this, this.save.bind(this), 500);
+    }
 
-        // create a new object with the defaults over-ridden by the options passed in, none in this case
-        let opts = Object.assign({}, defaults, {});
+    load() {
+        //try to get the time data from local storage
+        const localData = window.localStorage.getItem('settings_data');
+        //if there is time data, use extendObservable, which can be used to add observable properties to the existing target objects, much like object assign.
+        localData ? extendObservable(this, JSON.parse(localData)) : console.log('No Settings Data in Storage');
+    }
 
-        // assign options to instance data (using only property names contained in defaults object to avoid copying properties we don't want)
-        Object.keys(defaults).forEach((prop) => {
-            this[prop] = opts[prop];
-        });
+    save(json) {
+        window.localStorage.setItem('settings_data', json);
     }
 
     get parsedWebsites() {

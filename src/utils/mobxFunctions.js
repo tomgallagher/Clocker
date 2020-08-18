@@ -1,5 +1,5 @@
 import { fromResource } from 'mobx-utils';
-import { tap, filter } from 'rxjs/operators';
+import { filter } from 'rxjs/operators';
 import { ChromeMessageObservable } from './../utils/chromeFunctions';
 
 //this links the rxjs chrome message port to any mobx store that calls it
@@ -24,15 +24,14 @@ export const createMobxMessageListener = ({
                 //log to console for debugging
                 //tap((val) => console.log(val)),
                 //filter the messages according to the command filter
-                filter(
-                    (messageObj) => messageObj.request.command === commandFilter
-                )
+                filter((messageObj) => messageObj.request.command === commandFilter)
             ).subscribe((messageObj) => {
                 // subscribe to the messaging observer, invoke the sink callback whenever new data arrives, using the request property value
                 sink(messageObj.request[requestProperty]);
             });
         },
         () => {
+            console.log('Mobx Functions: UNSUBSCRIBED from message observer');
             // the user observable is not in use at the moment, unsubscribe (for now)
             currentSubscription.unsubscribe();
         }

@@ -68,6 +68,21 @@ export class JobStore {
 
         //it also needs to be saved into db at this point
     };
+
+    resetListeners = () => {
+        this.console.dispose();
+        this.pageEntries.dispose();
+        this.console = createMobxMessageListener({
+            commandFilter: 'incomingConsoleMessage',
+            requestProperty: 'message',
+            initialState: null,
+        });
+        this.pageEntries = createMobxMessageListener({
+            commandFilter: 'incomingPageData',
+            requestProperty: 'payload',
+            initialState: null,
+        });
+    };
 }
 
 //then add the decorations to make the relevant features of the list observable

@@ -10,8 +10,8 @@ export const ProgressBar = observer(() => {
     const activeJob = JobStore.jobs.length ? JobStore.jobs[JobStore.activeIndex] : JobStore.placeholderJob;
     //get the current page count
     const pageCount = activeJob.pages.length;
-    //then we will want to get the number of urls in the settings of the active job as well
-    const pageTarget = activeJob.settings.websites.length;
+    //then we will want to get the number of urls in the settings of the active job as well, using 20 as default on placeholder use
+    const pageTarget = activeJob.settings.websites ? activeJob.settings.websites.length : 20;
 
     return (
         <div className='internal-grid-content-single-row'>

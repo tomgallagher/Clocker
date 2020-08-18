@@ -61,11 +61,20 @@ export const Banner = observer(() => {
 
                         <Divider hidden></Divider>
 
-                        <Button color='black' onClick={handleStartClick}>
-                            Start
-                        </Button>
-
-                        {showMessage ? <Message size='tiny'>Urls must be added to settings</Message> : null}
+                        <Grid stackable textAlign='left'>
+                            <Grid.Row>
+                                <Grid.Column width={4}>
+                                    <Button color='black' onClick={handleStartClick}>
+                                        Start
+                                    </Button>
+                                </Grid.Column>
+                                <Grid.Column width={8}>
+                                    {showMessage ? (
+                                        <Message size='tiny'>Test websites must be added to settings</Message>
+                                    ) : null}
+                                </Grid.Column>
+                            </Grid.Row>
+                        </Grid>
                     </Grid.Column>
 
                     <Grid.Column width={6} floated='right'>

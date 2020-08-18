@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { Table, Menu, Icon, Select } from 'semantic-ui-react';
 import { useTable, useSortBy, usePagination } from 'react-table';
 import { CSVLink } from 'react-csv';
@@ -6,7 +6,7 @@ import { CSVLink } from 'react-csv';
 import './table.css';
 
 //we want to split the table props from our other props, so we can just pass the table props to react-table
-export const SemanticTable = ({ headers, dataset, rowClick, filename, ...props }) => {
+export const SemanticTable = ({ headers, dataset, rowClick, mostRecent, filename, ...props }) => {
     //make sure we memo-ize the incoming data so we can work it
     const columns = useMemo(() => headers, [headers]);
     const data = useMemo(() => dataset, [dataset]);
@@ -35,7 +35,18 @@ export const SemanticTable = ({ headers, dataset, rowClick, filename, ...props }
         previousPage,
         setPageSize,
         state: { pageIndex, pageSize },
-    } = useTable({ columns, data, initialState: { pageIndex: 0 } }, useSortBy, usePagination);
+    } = useTable(
+        { columns, data, initialState: { pageIndex: 0 }, autoResetPage: !mostRecent }, //we need to set autoResetPage to false to prevent pageIndex going to 0 when data changes
+        useSortBy,
+        usePagination
+    );
+
+    useEffect(() => {
+        if (pageCount > 1 && mostRecent) {
+            //this only works in conjunction with autoResetPage set to false
+            gotoPage(pageCount - 1);
+        }
+    }, [pageCount, mostRecent, gotoPage]);
 
     return (
         <div className='tableContainer'>
@@ -214,6 +225,8 @@ SemanticTable.defaultProps = {
     structured: false,
     //A table can adjust its text alignment.
     textAlign: 'center',
+    //then we have a param to show the most recent entries in pagination
+    mostRecent: false,
     //then we have the row click handler as empty function by default
     rowClick: () => {},
     //then a default prop for filename
