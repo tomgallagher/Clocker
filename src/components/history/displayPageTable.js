@@ -1,21 +1,25 @@
 import React from 'react';
-import { runInAction } from 'mobx';
 import { observer } from 'mobx-react';
-import { useStores } from './../../hooks/useStores';
-import { SemanticTable } from './../../components/tables/table';
+import { runInAction } from 'mobx';
+import { useStores } from '../../hooks/useStores';
+import { useBrowser } from '../../hooks/useBrowser';
+import { SemanticTable } from '../tables/table';
+import { PlaceHolder } from '../placeHolder';
 
-export const PageTable = observer(() => {
+export const DisplayPageTable = observer(() => {
     //get the settings to see if we have any saved layouts
     const { JobStore, Settings } = useStores();
-    //get the activeJob
-    const activeJob = JobStore.jobs.length ? JobStore.jobs[JobStore.activeIndex] : JobStore.placeholderJob;
+    //get the activeJob, if not null, MUST CHECK NOT NULL AS ZERO INDEX POSSIBLE, otherwise the placeholder will do fine
+    const displayJob = JobStore.displayIndex !== null ? JobStore.jobs[JobStore.displayIndex] : JobStore.placeholderJob;
+    //get the browser details for the csv file name
+    const { Browser } = useBrowser();
 
     //then we have the custom row click
     const handleRowClick = (row) => {
         //here we can use the row info to search our pages and then provide further information, such as showing the screenshot in the sidebar
         console.log(row);
         runInAction(() => {
-            Settings.activePageIndex = activeJob.pages.findIndex((page) => page.url === row.url);
+            Settings.pageDisplayIndex = displayJob.pages.findIndex((page) => page.url === row.url);
             Settings.sidebar = 'showPageDetail';
             Settings.showSidebar = true;
         });
@@ -42,17 +46,22 @@ export const PageTable = observer(() => {
 
     return (
         <div className='internal-grid-content-single-row'>
-            <SemanticTable
-                headers={columns}
-                dataset={activeJob.pageTableData}
-                striped={true}
-                compact={true}
-                sortable={true}
-                selectable={true}
-                rowClick={handleRowClick}
-                mostRecent={true}
-                filename={Settings.toString}
-            />
+            {/*if display index is not null, then show table, MUST CHECK NOT NULL AS ZERO INDEX POSSIBLE*/}
+            {JobStore.displayIndex !== null ? (
+                <SemanticTable
+                    headers={columns}
+                    dataset={displayJob.pageTableData}
+                    striped={true}
+                    compact={true}
+                    sortable={true}
+                    selectable={true}
+                    rowClick={handleRowClick}
+                    mostRecent={true}
+                    filename={`${Settings.toString}_${Browser.name}_${Browser.os}${Browser.os_version}`}
+                />
+            ) : (
+                <PlaceHolder iconName='arrow up' message='Click on job results to show page data' />
+            )}
         </div>
     );
 });

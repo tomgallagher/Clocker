@@ -2,7 +2,7 @@ import { observable, autorun, reaction, decorate, computed } from 'mobx';
 import { createMobxMessageListener } from './../utils/mobxFunctions';
 import { v4 as uuidv4 } from 'uuid';
 import { RoundedAverage, RoundedAverageMegaBytes, TotalMegaBytes } from './../utils/arrayFunctions';
-
+import { BrowserDetect } from '../utils/browserDetect';
 import ColorPalette from './../components/charts/colorPalette.json';
 
 //for testing purposes
@@ -12,7 +12,12 @@ export class JobStore {
     constructor() {
         //we have the basic attributes of the job store
         this.jobs = [];
+        //we have the activeIndex for jobs currently running
         this.activeIndex = 0;
+        //we have the display index for past jobs that need to be displayed
+        this.displayIndex = null;
+        //the basic params of the platform we are working on
+        this.browser = new BrowserDetect();
         //then we have the placeholders so the UI displays with no data
         this.placeholderJob = new Job({});
         this.placeholderPage = new Page({});
@@ -65,8 +70,14 @@ export class JobStore {
     }
 
     createJob = (job) => {
+        //add the browser details to the job
+        const browserJob = Object.assign({}, job, {
+            browserName: this.browser.name,
+            operatingSystem: this.browser.os,
+            operatingSystemVersion: this.browser.os_version,
+        });
         //on button click in banner.js front page we need to create a new job and push it into the jobs array
-        const newJob = new Job(job);
+        const newJob = new Job(browserJob);
         this.jobs.push(newJob);
 
         //it also needs to be saved into db at this point
@@ -86,14 +97,46 @@ export class JobStore {
             initialState: null,
         });
     };
+
+    get jobTableData() {
+        return this.jobs.map((job) => {
+            //we have no need for all the fields in the table data
+            const partialJob = {
+                id: job.id,
+                name: job.name,
+                updatedtAt: job.updatedtAt,
+                browserName: job.browserName,
+                operatingSystem: job.operatingSystem,
+                operatingSystemVersion: job.operatingSystemVersion,
+                bandwidth: job.bandwidth,
+                pageIterations: job.pageIterations,
+                latency: job.latency,
+                withCache: job.withCache,
+                withServiceWorker: job.withServiceWorker,
+                pagesProcessed: job.pages.length,
+                dclAverage: job.dclAverage,
+                completeAverage: job.completeAverage,
+                dataUsageAverage: job.dataUsageAverage,
+                headerTimingsAverage: job.headerTimingsAverage,
+            };
+            //we have no need for the following settings
+            const { activePageIndex, screenshotWidth, websites, ...partialSettings } = job.settings;
+            //however we do need the settings extracted from the job settings object
+            const expandedPartialJob = Object.assign({}, partialJob, partialSettings);
+            //then we return the partial job
+            return expandedPartialJob;
+        });
+    }
 }
 
 //then add the decorations to make the relevant features of the list observable
 decorate(JobStore, {
     jobs: observable,
     activeIndex: observable,
+    displayIndex: observable,
     isLoading: observable,
     isLoadError: observable,
+    jobTableData: computed,
 });
 
 export class Job {
@@ -101,7 +144,11 @@ export class Job {
         //always use the default settings
         var defaults = {
             name: 'N/A',
+            browserName: 'N/A',
+            operatingSystem: 'N/A',
+            operatingSystemVersion: 'N/A',
             id: uuidv4(),
+            database_id: 0,
             createdAt: Date.now(),
             updatedtAt: Date.now(),
             settings: {},

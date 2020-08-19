@@ -9,7 +9,7 @@ import { PageTitle } from './../components/pageTitle.js';
 import { HeaderLatency } from '../components/results/headerLatency';
 import { DataUsage } from '../components/results/dataUsage';
 import { ProgressBar } from './../components/results/progress';
-import { PageTable } from './../components/results/pageTable';
+import { ActivePageTable } from '../components/results/activePageTable';
 import { ConsoleList } from './../components/results/consoleList';
 import { Timings } from './../components/results/timings';
 import { LoadChart } from '../components/charts/loadChart';
@@ -82,7 +82,7 @@ export const Results = () => {
                     </div>
                     <div key='pageTable'>
                         <GridItem header='Page Results'>
-                            <PageTable />
+                            <ActivePageTable />
                         </GridItem>
                     </div>
                     <div key='console'>

@@ -15,7 +15,7 @@ export class Settings {
         this.screenshotWidth = 600;
         //UI settings
         this.customUrlLists = [];
-        this.activePageIndex = null;
+        this.pageDisplayIndex = null;
         this.isPaused = false;
         this.sidebar = 'default';
         this.showSidebar = false;
@@ -37,7 +37,7 @@ export class Settings {
             //get the object
             let parsedData = JSON.parse(localData);
             //then adjust and extend
-            parsedData.activePageIndex = null;
+            parsedData.pageDisplayIndex = null;
             parsedData.isPaused = false;
             parsedData.sidebar = 'default';
             parsedData.showSidebar = false;
@@ -87,7 +87,7 @@ decorate(Settings, {
     screenshotWidth: observable,
     //UI settings
     customUrlLists: observable,
-    activePageIndex: observable,
+    pageDisplayIndex: observable,
     isPaused: observable,
     sidebar: observable,
     showSidebar: observable,

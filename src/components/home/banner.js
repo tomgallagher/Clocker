@@ -18,6 +18,7 @@ export const Banner = observer(() => {
             setShowMessage(false);
             //get the settings info we care about as partial
             const {
+                pageDisplayIndex,
                 customUrlLists,
                 isPaused,
                 sidebar,

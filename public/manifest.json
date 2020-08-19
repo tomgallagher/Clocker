@@ -2,7 +2,7 @@
     "manifest_version": 2,
 
     "name": "Clocker",
-    "description": "Automated Testing of Browser Performance",
+    "description": "Performance analysis for Chromium-based browsers and content-blocking extensions",
     "version": "0.0.1",
     "background": {
         "scripts": [

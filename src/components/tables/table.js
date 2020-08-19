@@ -124,13 +124,15 @@ export const SemanticTable = ({ headers, dataset, rowClick, mostRecent, filename
                         <Table.Footer>
                             <Table.Row>
                                 <Table.HeaderCell colSpan={visibleColumns.length.toString()}>
-                                    <Menu floated='left'>
-                                        <Menu.Item as='a'>
-                                            <CSVLink data={data} headers={csvHeaders} filename={`${filename}.csv`}>
-                                                CSV
-                                            </CSVLink>
-                                        </Menu.Item>
-                                    </Menu>
+                                    {filename.length ? (
+                                        <Menu floated='left'>
+                                            <Menu.Item as='a'>
+                                                <CSVLink data={data} headers={csvHeaders} filename={`${filename}.csv`}>
+                                                    CSV
+                                                </CSVLink>
+                                            </Menu.Item>
+                                        </Menu>
+                                    ) : null}
 
                                     <Menu floated='right' pagination>
                                         <Menu.Item as='a' icon onClick={() => gotoPage(0)} disabled={!canPreviousPage}>

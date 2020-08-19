@@ -8,10 +8,16 @@ import { ErrorReport } from './errorReport';
 
 export const PageDetail = observer(() => {
     const { JobStore, Settings } = useStores();
-    //get the activeJob
-    const activeJob = JobStore.jobs.length ? JobStore.jobs[JobStore.activeIndex] : JobStore.placeholderJob;
+    //get the activeJob, which will depend upon which parent component calls this component
+    const activeJob = JobStore.jobs.length
+        ? //if we are in the history page, then we will have set the job display index, so we use that.
+          Settings.jobDisplayIndex
+            ? JobStore.jobs[JobStore.jobDisplayIndex]
+            : //if we are in the results page, then we can just use the active job
+              JobStore.jobs[JobStore.activeIndex]
+        : JobStore.placeholderJob;
     //get the active page
-    const activePage = activeJob.pages.length ? activeJob.pages[Settings.activePageIndex] : JobStore.placeholderPage;
+    const activePage = activeJob.pages.length ? activeJob.pages[Settings.pageDisplayIndex] : JobStore.placeholderPage;
     const data = {
         labels: ['HTML', 'XHR', 'Fetch', 'Websocket'],
         datasets: [
