@@ -10,6 +10,7 @@ import { HeaderLatency } from '../components/results/headerLatency';
 import { DataUsage } from '../components/results/dataUsage';
 import { ProgressBar } from './../components/results/progress';
 import { ActivePageTable } from '../components/results/activePageTable';
+import { ActiveMetricsTable } from '../components/results/activeMetricsTable';
 import { ConsoleList } from './../components/results/consoleList';
 import { Timings } from './../components/results/timings';
 import { LoadChart } from '../components/charts/loadChart';
@@ -88,6 +89,11 @@ export const Results = () => {
                     <div key='console'>
                         <GridItem header='Activity Log'>
                             <ConsoleList />
+                        </GridItem>
+                    </div>
+                    <div key='metricsTable'>
+                        <GridItem header='Page Metrics'>
+                            <ActiveMetricsTable />
                         </GridItem>
                     </div>
                     <div key='loadChart'>

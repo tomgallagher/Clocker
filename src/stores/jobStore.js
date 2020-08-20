@@ -243,6 +243,21 @@ export class Job {
         });
     }
 
+    get pageMetricsTableData() {
+        return this.pages.map((page) => {
+            //then we return the partial data for the metrics chart
+            return {
+                url: page.url,
+                metricsDocumentsAverage: page.minorResources.metricsDocumentsAverage,
+                metricsResourcesAverage: page.minorResources.metricsResourcesAverage,
+                metricsFramesAverage: page.minorResources.metricsFramesAverage,
+                metricsAdvertisingFramesAverage: page.minorResources.metricsAdvertisingFramesAverage,
+                metricsUsedHeapAverage: page.minorResources.metricsUsedHeapAverage,
+                metricsTotalHeapAverage: page.minorResources.metricsTotalHeapAverage,
+            };
+        });
+    }
+
     get resourceLoadData() {
         return {
             datasets: [
@@ -315,6 +330,7 @@ decorate(Job, {
     scriptLoadTotal: observable,
     //then we need to add the computed function
     pageTableData: computed,
+    pageMetricsTableData: computed,
     resourceLoadData: computed,
 });
 

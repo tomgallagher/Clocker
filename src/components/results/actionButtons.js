@@ -31,15 +31,21 @@ export const ActionButtons = observer(() => {
 
     return (
         <Button.Group floated='right' size='mini' style={{ marginRight: '10px' }}>
-            <Button name='Pause' color='black' onClick={handleButtonClick}>
+            <Button name='Pause' title='Click to pause between pages' color='black' onClick={handleButtonClick}>
                 Pause
             </Button>
             <Button.Or />
-            <Button name='Resume' color='black' positive={Settings.isPaused} onClick={handleButtonClick}>
+            <Button
+                name='Resume'
+                title='Click to resume next page'
+                color='black'
+                positive={Settings.isPaused}
+                onClick={handleButtonClick}
+            >
                 Resume
             </Button>
             <Button.Or />
-            <Button name='Abort' negative onClick={handleButtonClick}>
+            <Button name='Abort' title='Click to abort test immediately' negative onClick={handleButtonClick}>
                 Abort
             </Button>
         </Button.Group>

@@ -35,9 +35,15 @@ class Page {
                 fetchRequestsAverage: 0,
                 websocketLoadAverage: 0,
                 websocketRequestsAverage: 0,
+                metricsDocumentsAverage: 0,
+                metricsResourcesAverage: 0,
+                metricsFramesAverage: 0,
+                metricsAdvertisingFramesAverage: 0,
+                metricsUsedHeapAverage: 0,
+                metricsTotalHeapAverage: 0,
+                mappedMetricsArray: [],
                 errorArray: 0,
                 errorCount: 0,
-                metricsArray: [],
             },
             screenshot: 'N/A',
         };
@@ -96,7 +102,7 @@ class Page {
             this.cssRequestsAverage = this.iterationsArray
                 .map((iteration) => iteration.styleRequestCount)
                 .reduce(RoundedAverage, 0);
-
+            //then we calculate the minor resources
             this.minorResources.htmlLoadAverage = this.iterationsArray
                 .map((iteration) => iteration.htmlLoadTotal)
                 .reduce(RoundedAverage, 0);
@@ -122,6 +128,29 @@ class Page {
                 .map((iteration) => iteration.websocketRequestCount)
                 .reduce(RoundedAverage, 0);
 
+            //then we calculate the minor resources metrics
+            this.minorResources.metricsDocumentsAverage = this.iterationsArray
+                .map((iteration) => iteration.metrics.get('Documents'))
+                .reduce(RoundedAverage, 0);
+            this.minorResources.metricsResourcesAverage = this.iterationsArray
+                .map((iteration) => iteration.metrics.get('Resources'))
+                .reduce(RoundedAverage, 0);
+            this.minorResources.metricsFramesAverage = this.iterationsArray
+                .map((iteration) => iteration.metrics.get('Frames'))
+                .reduce(RoundedAverage, 0);
+            this.minorResources.metricsAdvertisingFramesAverage = this.iterationsArray
+                .map((iteration) => iteration.metrics.get('AdSubframes'))
+                .reduce(RoundedAverage, 0);
+            this.minorResources.metricsUsedHeapAverage = this.iterationsArray
+                .map((iteration) => iteration.metrics.get('JSHeapUsedSize'))
+                .reduce(RoundedAverage, 0);
+            this.minorResources.metricsTotalHeapAverage = this.iterationsArray
+                .map((iteration) => iteration.metrics.get('JSHeapTotalSize'))
+                .reduce(RoundedAverage, 0);
+
+            //then we want to collect the metrics into the metrics array
+            this.minorResources.mappedMetricsArray = this.iterationsArray.map((iteration) => iteration.metrics);
+
             //for errors, or blocked items, we want an average of the resources blocked
             this.minorResources.errorCount = this.iterationsArray
                 .map((iteration) => iteration.errorCount)
@@ -130,8 +159,6 @@ class Page {
             this.minorResources.errorArray = this.iterationsArray.map((iteration, index) => ({
                 [index]: iteration.errorArray,
             }));
-            //then we want to collect the metrics into the metrics array
-            this.minorResources.metricsArray = this.iterationsArray.map((iteration) => iteration.metrics);
         }
     };
 }
