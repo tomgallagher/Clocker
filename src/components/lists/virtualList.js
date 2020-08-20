@@ -1,4 +1,4 @@
-import React, { createContext, useRef, useCallback } from 'react';
+import React, { createContext, useRef, useCallback, useLayoutEffect } from 'react';
 import { VariableSizeList as List } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { useWindowSize } from './../../hooks/useWindowResize';
@@ -25,6 +25,15 @@ export const VirtualList = ({ listRef, rowData, styleErrorText }) => {
     }, []);
     //then we have the custom hook that is listening for changes in window size
     const [windowWidth] = useWindowSize();
+    //then when we load we need to reset the list so all the heights are set appropriately
+    useLayoutEffect(() => {
+        if (listRef.current) {
+            //VariableSizeList caches offsets and measurements for each index for performance purposes.
+            //This method clears that cached data for all items after (and including) the specified index.
+            //It should be called whenever a item's size changes.
+            listRef.current.resetAfterIndex(0);
+        }
+    });
 
     return (
         <VirtualListContext.Provider value={{ setSize, windowWidth }}>
@@ -65,6 +74,7 @@ export const VirtualList = ({ listRef, rowData, styleErrorText }) => {
 
 VirtualList.defaultProps = {
     listRef: null,
+    containerRef: null,
     rowData: [],
     styleErrorText: false,
 };

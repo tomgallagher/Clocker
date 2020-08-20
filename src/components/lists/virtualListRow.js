@@ -20,10 +20,7 @@ export const VirtualListRow = memo(({ index, message, styleErrorText }) => {
             ref={root}
             className={index % 2 ? 'ListItemOdd' : 'ListItemEven'}
             style={{
-                color:
-                    styleErrorText && message.includes('Error')
-                        ? '#d02712'
-                        : 'unset',
+                color: styleErrorText && message.includes('Error') ? '#d02712' : 'unset',
             }}
             //we use dangerously set html because we know where the message is coming from and we can then include links and styling in lists
             dangerouslySetInnerHTML={{ __html: message }}
