@@ -8,6 +8,7 @@ import { PageTitle } from './../components/pageTitle.js';
 import { GridItem } from './../components/gridItem';
 import { JobsTable } from '../components/history/jobsTable';
 import { DisplayPageTable } from '../components/history/displayPageTable';
+import { DisplayMetricsTable } from '../components/history/displayMetricsTable';
 
 // <ResponsiveReactGridLayout> takes width to calculate positions on drag events.
 // WidthProvider can be used to automatically determine width upon initialization and window resize events.
@@ -53,6 +54,11 @@ export const History = () => {
                     <div key='pageTable'>
                         <GridItem header='Page Results'>
                             <DisplayPageTable />
+                        </GridItem>
+                    </div>
+                    <div key='metricsTable'>
+                        <GridItem header='Page Metrics'>
+                            <DisplayMetricsTable />
                         </GridItem>
                     </div>
                 </ResponsiveGridLayout>
