@@ -49,13 +49,11 @@ chrome.runtime.onMessage.addListener((request) => {
                 //first we stop the subscription, which will prevent any further processing
                 activeJobSubscription.unsubscribe();
                 //then we detach the debugger
-                detachDebugger(activeJob.tabId)
+                stopDebugger(activeJob.tabId)
                     //then we close the test tab
                     .then(() => closeTestTab(activeJob.tabId))
-                    .then(() =>
-                        //then we send the message
-                        sendConsoleMessage(`Aborted Test Job: ${activeJob.id}`)
-                    );
+                    //then we send the message
+                    .then(() => sendConsoleMessage(`Aborted Test Job: ${activeJob.id}`));
             }
             break;
         default:
@@ -115,6 +113,11 @@ const runJob = (payload) => {
                 (job) => from(enablePageEvents(job.tabId)),
                 (job) => job
             ),
+            //we need to have a view of page events for alert controls etc,
+            switchMap(
+                (job) => from(enablePerformanceMetrics(job.tabId)),
+                (job) => job
+            ),
             //we need to set the network conditions
             switchMap(
                 (job) => from(setNetworkConditions(job.tabId, job.latency, job.bandwidth_down, job.bandwidth_up)),
@@ -139,7 +142,7 @@ const runJob = (payload) => {
                     })
             ),
             //so here we start actioning the page and this needs to be concat map so it waits for each page to complete
-            concatMap((page) => from(runSingleUrl(page)))
+            concatMap((page) => runSingleUrl$(page))
         )
         //report results and errors
         .subscribe(
@@ -147,10 +150,196 @@ const runJob = (payload) => {
             (err) => sendConsoleMessage(`Cannot complete test job with ID: ${payload.id}: unrecoverable error: ${err}`),
             () => {
                 sendConsoleMessage(`Completed test job with ID: ${payload.id}`).then(() =>
-                    detachDebugger(activeJob.tabId)
+                    stopDebugger(activeJob.tabId)
                 );
             }
         );
+};
+
+//OBSERVABLES FOR REPEATING PAGE IERATIONS
+
+const runSingleUrl$ = (page) => {
+    return of(page).pipe(
+        //wait for all the iterations to complete for the page
+        concatMap((page) =>
+            //this runs all the iterations required by user settings
+            runIterations$(page).pipe(
+                //returns an array which we map to the page, which we then return to the stream
+                map((iterationsArray) => {
+                    page.iterationsArray = iterationsArray;
+                    return page;
+                })
+            )
+        ),
+        //run the stats collection from iterations
+        tap((page) => {
+            //this is where PAGE AVERAGE stats are computed
+            page.updatePageStats();
+            sendConsoleMessage(
+                `Computing average page stats across ${page.pageIterations} iterations for <a target="_blank" href="${page.url}">${page.url}</a>`
+            );
+        }),
+        //then run the screenshot
+        switchMap(
+            (page) => from(takeScreenshot(page.tabId, page.url, page.screenshotWidth)),
+            (page, dataURL) => {
+                page.screenshot = dataURL;
+                return page;
+            }
+        ),
+        //then send the data to the UI
+        switchMap(
+            (page) => from(sendPageData(page)),
+            (page) => page
+        ),
+        //we need to take the page and return an inner observable, which essentially is a state provider about pause and resume
+        //as we are using concatMap, the application will pause indefinitely until resume is clicked
+        concatMap((page) =>
+            //this starts as true and can only be changed by pause or abort message
+            pauseResume$.pipe(
+                //so we can see the current state for debugging
+                tap((v) => console.log(`${v ? 'Application running' : 'Application paused'}`)),
+                // Only emit from the inner observable if true
+                filter((v) => v),
+                //we only want one emission as we are switching back to the page
+                take(1),
+                //then a simple continuation
+                switchMap(() => of(page))
+            )
+        )
+    );
+};
+
+const runIterations$ = (page) => {
+    return of(page).pipe(
+        //we need to wait for the single iteration to complete, which depends upon the delay after the complete event in data collection observable
+        concatMap((page) => runIteration$(page)),
+        //this repeats as many times as required
+        repeat(page.pageIterations),
+        //then we want all the iterations collected as an array once complete
+        toArray()
+    );
+};
+
+const runIteration$ = (page) => {
+    return of(page).pipe(
+        //first we create the new iteration, with only the url and the tab id needed from the page
+        map(
+            (mappedPage) =>
+                new Iteration({
+                    url: mappedPage.url,
+                    tabId: mappedPage.tabId,
+                })
+        ),
+        //then we switchmap into an execution of the promises that clear the cache
+        switchMap(
+            (iteration) =>
+                from(
+                    page.withCache
+                        ? //if the user has chosen to have the cache active then just resolve
+                          Promise.resolve()
+                        : //otherwise this clears the cache each time we start an iteration
+                          Promise.all([clearCache(iteration.tabId), disableCache(iteration.tabId)])
+                ),
+            (iteration) => iteration
+        ),
+        //then we switchMap into the actual execution of the commands, using combineLatest
+        switchMap(
+            (iteration) =>
+                combineLatest(
+                    //this is the key data collection observable at dataCollection.js - only emits 5 seconds after page completes
+                    masterDataObservable.pipe(tap((data) => console.log(data))),
+                    //this opens the page and injects the DCL and complete down/up scroll actions into runtime, this will emit almost instantly
+                    from(navigateAndScroll(iteration.tabId, iteration.url))
+                ),
+            (
+                //with result selector function we take iteration and array from combineLatest
+                iteration,
+                [
+                    //then we need to deconstruct the RawData class object that comes back from the masterDataObservable
+                    {
+                        onBeforeRequestTime,
+                        onInteractiveTime,
+                        onCompleteTime,
+                        dataUsageArray,
+                        requestCount,
+                        headerTimingsArray,
+                        imageLoadArray,
+                        imageCount,
+                        mediaLoadArray,
+                        mediaCount,
+                        fontLoadArray,
+                        fontCount,
+                        styleLoadArray,
+                        styleCount,
+                        scriptLoadArray,
+                        scriptCount,
+                        htmlLoadArray,
+                        htmlCount,
+                        xhrLoadArray,
+                        xhrCount,
+                        fetchLoadArray,
+                        fetchCount,
+                        websocketLoadArray,
+                        websocketCount,
+                        errorArray,
+                        errorCount,
+                        metrics,
+                    },
+                ]
+            ) => {
+                //CONVERT RAW DATA CLASS TO ITERATION CLASS
+
+                //timing stats
+                iteration.onCommittedTime = onBeforeRequestTime - iteration.startTime;
+                iteration.onDOMLoadedTime = onInteractiveTime - iteration.startTime;
+                iteration.onCompleteTime = onCompleteTime - iteration.startTime;
+                //major resource stats
+                iteration.dataUsageTotal = dataUsageArray.filter(Boolean).reduce(Total, 0);
+                iteration.requestTotal = requestCount;
+                iteration.headerTimingsAverage = headerTimingsArray.filter(Boolean).reduce(RoundedAverage, 0);
+                iteration.imageLoadTotal = imageLoadArray.filter(Boolean).reduce(Total, 0);
+                iteration.imageRequestCount = imageCount;
+                iteration.mediaLoadTotal = mediaLoadArray.filter(Boolean).reduce(Total, 0);
+                iteration.mediaRequestCount = mediaCount;
+                iteration.fontLoadTotal = fontLoadArray.filter(Boolean).reduce(Total, 0);
+                iteration.fontRequestCount = fontCount;
+                iteration.styleLoadTotal = styleLoadArray.filter(Boolean).reduce(Total, 0);
+                iteration.styleRequestCount = styleCount;
+                iteration.scriptLoadTotal = scriptLoadArray.filter(Boolean).reduce(Total, 0);
+                iteration.scriptRequestCount = scriptCount;
+                //minor resource stats
+                iteration.htmlLoadTotal = htmlLoadArray.filter(Boolean).reduce(Total, 0);
+                iteration.htmlRequestCount = htmlCount;
+                iteration.xhrLoadTotal = xhrLoadArray.filter(Boolean).reduce(Total, 0);
+                iteration.xhrRequestCount = xhrCount;
+                iteration.fetchLoadTotal = fetchLoadArray.filter(Boolean).reduce(Total, 0);
+                iteration.fetchRequestCount = fetchCount;
+                iteration.websocketLoadTotal = websocketLoadArray.filter(Boolean).reduce(Total, 0);
+                iteration.websocketRequestCount = websocketCount;
+                //Note the addition of the errors
+                iteration.errorArray = errorArray;
+                iteration.errorCount = errorCount;
+                //and the metrics map
+                iteration.metrics = metrics;
+                return iteration;
+            }
+        ),
+        //only take one before killing the stream and unsubscribing from all inputs into the combineLatest stream
+        take(1),
+        //then this is where we kill the service worker if that's what's ordered
+        switchMap(
+            (iteration) =>
+                from(
+                    page.withServiceWorker
+                        ? //if the user has chosen to keep service workers active then we just resolve
+                          Promise.resolve()
+                        : //otherwise this orders the examination of service workers and potentially stops them
+                          stopServiceWorker(iteration.tabId)
+                ),
+            (iteration) => iteration
+        )
+    );
 };
 
 //PROMISES FOR REPEAT
@@ -206,9 +395,6 @@ const runIterations = (page) => {
         //here we encase the promise in an observable so that our single promise can be retried
         var rxShelledPromise = defer(() => from(runIteration(page)));
         //then we subscribe to the promise with a repeat setting
-
-        //this is where the pause / resume might go, buffer toggle before the repeat
-
         rxShelledPromise.pipe(repeat(page.pageIterations)).subscribe(
             (iteration) => {
                 page.iterationsArray.push(iteration);
@@ -292,6 +478,7 @@ const runIteration = (page) => {
                                 websocketCount,
                                 errorArray,
                                 errorCount,
+                                metrics,
                             },
                         ]
                     ) => {
@@ -327,7 +514,8 @@ const runIteration = (page) => {
                         //Note the addition of the errors
                         iteration.errorArray = errorArray;
                         iteration.errorCount = errorCount;
-
+                        //and the metrics map
+                        iteration.metrics = metrics;
                         return iteration;
                     }
                 ),
@@ -486,58 +674,146 @@ const switchToTab = (tabId) => {
 
 //DEBUGGER COMMANDS
 
+const stopDebugger = (tabId) => {
+    return new Promise((resolve) => {
+        disableNetworkEvents(tabId)
+            .then(() => disablePageEvents(tabId))
+            .then(() => disablePerformanceMetrics(tabId))
+            .then(() => detachDebugger(tabId))
+            .then(() => resolve());
+    });
+};
+
 const attachDebugger = (tabID) => {
     return new Promise((resolve, reject) => {
-        chrome.debugger.attach({ tabId: tabID }, '1.3', function () {
+        chrome.debugger.attach({ tabId: tabID }, '1.3', function (response) {
             if (chrome.runtime.lastError) {
                 sendConsoleMessage(`Test Error: Remote Protocol Attach Error: ${chrome.runtime.lastError.message}`);
                 reject(chrome.runtime.lastError.message);
                 return;
             }
             console.log(`Test Suite: Chrome Debugger Opened`);
-            resolve();
+            resolve(response);
         });
     });
 };
 
 const detachDebugger = (tabID) => {
     return new Promise((resolve, reject) => {
-        chrome.debugger.detach({ tabId: tabID }, function () {
+        chrome.debugger.detach({ tabId: tabID }, function (response) {
             if (chrome.runtime.lastError) {
                 sendConsoleMessage(`Test Error: Remote Protocol Detach Error: ${chrome.runtime.lastError.message}`);
                 reject(chrome.runtime.lastError.message);
                 return;
             }
             console.log(`Test Suite: Chrome Debugger Closed`);
-            resolve();
+            resolve(response);
         });
     });
 };
 
 const enableNetworkEvents = (tabID) => {
     return new Promise((resolve, reject) => {
-        chrome.debugger.sendCommand({ tabId: tabID }, 'Network.enable', {}, function () {
+        chrome.debugger.sendCommand({ tabId: tabID }, 'Network.enable', {}, function (response) {
             if (chrome.runtime.lastError) {
                 sendConsoleMessage(`Test Error: Network Domain Enabling Error: ${chrome.runtime.lastError.message}`);
                 reject(chrome.runtime.lastError.message);
                 return;
             }
-            console.log(`Test Suite: Chrome Debugger NetWork Domain Notifications Enabled`);
-            resolve();
+            console.log(`Test Suite: Chrome Debugger Network Domain Notifications Enabled`);
+            resolve(response);
+        });
+    });
+};
+
+const disableNetworkEvents = (tabID) => {
+    return new Promise((resolve, reject) => {
+        chrome.debugger.sendCommand({ tabId: tabID }, 'Network.disable', {}, function (response) {
+            if (chrome.runtime.lastError) {
+                sendConsoleMessage(`Test Error: Network Domain Disabling Error: ${chrome.runtime.lastError.message}`);
+                reject(chrome.runtime.lastError.message);
+                return;
+            }
+            console.log(`Test Suite: Chrome Debugger Network Domain Notifications Disabled`);
+            resolve(response);
         });
     });
 };
 
 const enablePageEvents = (tabID) => {
     return new Promise((resolve, reject) => {
-        chrome.debugger.sendCommand({ tabId: tabID }, 'Page.enable', {}, function () {
+        chrome.debugger.sendCommand({ tabId: tabID }, 'Page.enable', {}, function (response) {
             if (chrome.runtime.lastError) {
                 sendConsoleMessage(`Test Error: Page Domain Enabling Error: ${chrome.runtime.lastError.message}`);
                 reject(chrome.runtime.lastError.message);
                 return;
             }
             console.log(`Test Suite: Chrome Debugger Page Domain Notifications Enabled`);
-            resolve();
+            resolve(response);
+        });
+    });
+};
+
+const disablePageEvents = (tabID) => {
+    return new Promise((resolve, reject) => {
+        chrome.debugger.sendCommand({ tabId: tabID }, 'Page.disable', {}, function (response) {
+            if (chrome.runtime.lastError) {
+                sendConsoleMessage(`Test Error: Page Domain Disabling Error: ${chrome.runtime.lastError.message}`);
+                reject(chrome.runtime.lastError.message);
+                return;
+            }
+            console.log(`Test Suite: Chrome Debugger Page Domain Notifications Disabled`);
+            resolve(response);
+        });
+    });
+};
+
+const enablePerformanceMetrics = (tabID) => {
+    return new Promise((resolve, reject) => {
+        chrome.debugger.sendCommand({ tabId: tabID }, 'Performance.enable', { timeDomain: 'timeTicks' }, function (
+            response
+        ) {
+            if (chrome.runtime.lastError) {
+                sendConsoleMessage(
+                    `Test Error: Performance Metrics Enabling Error: ${chrome.runtime.lastError.message}`
+                );
+                reject(chrome.runtime.lastError.message);
+                return;
+            }
+            console.log(`Test Suite: Chrome Debugger Performance Metrics Enabled`);
+            resolve(response);
+        });
+    });
+};
+
+const getPerformanceMetrics = (tabID) => {
+    return new Promise((resolve, reject) => {
+        chrome.debugger.sendCommand({ tabId: tabID }, 'Performance.getMetrics', {}, function (metrics) {
+            if (chrome.runtime.lastError) {
+                sendConsoleMessage(
+                    `Test Error: Performance Metrics Collect Error: ${chrome.runtime.lastError.message}`
+                );
+                reject(chrome.runtime.lastError.message);
+                return;
+            }
+            console.log(`Test Suite: Chrome Debugger Performance Metrics Retrieved`);
+            resolve(metrics);
+        });
+    });
+};
+
+const disablePerformanceMetrics = (tabID) => {
+    return new Promise((resolve, reject) => {
+        chrome.debugger.sendCommand({ tabId: tabID }, 'Performance.disable', {}, function (response) {
+            if (chrome.runtime.lastError) {
+                sendConsoleMessage(
+                    `Test Error: Performance Metrics Disabling Error: ${chrome.runtime.lastError.message}`
+                );
+                reject(chrome.runtime.lastError.message);
+                return;
+            }
+            console.log(`Test Suite: Chrome Debugger Performance Metrics Disabled`);
+            resolve(response);
         });
     });
 };
@@ -553,7 +829,7 @@ const setNetworkConditions = (tabID, latency, downloadSpeed, uploadSpeed) => {
                 downloadThroughput: downloadSpeed,
                 uploadThroughput: uploadSpeed,
             },
-            function () {
+            function (response) {
                 if (chrome.runtime.lastError) {
                     sendConsoleMessage(`Test Error: Throttle Bandwidth Error: ${chrome.runtime.lastError.message}`);
                     reject(chrome.runtime.lastError.message);
@@ -565,7 +841,7 @@ const setNetworkConditions = (tabID, latency, downloadSpeed, uploadSpeed) => {
                 console.log(
                     `Test Suite: Chrome Debugger Network Conditions - Latency: ${latency} ms, DownloadSpeed: ${downloadSpeed} bytes/sec, UploadSpeed ${uploadSpeed} bytes/sec`
                 );
-                resolve();
+                resolve(response);
             }
         );
     });
@@ -573,7 +849,7 @@ const setNetworkConditions = (tabID, latency, downloadSpeed, uploadSpeed) => {
 
 const clearCache = (tabID) => {
     return new Promise((resolve, reject) => {
-        chrome.debugger.sendCommand({ tabId: tabID }, 'Network.clearBrowserCache', function () {
+        chrome.debugger.sendCommand({ tabId: tabID }, 'Network.clearBrowserCache', function (response) {
             if (chrome.runtime.lastError) {
                 sendConsoleMessage(
                     `Test Error: Remote Protocol Clear Cache Error: ${chrome.runtime.lastError.message}`
@@ -583,14 +859,16 @@ const clearCache = (tabID) => {
             }
             sendConsoleMessage('Browser cache cleared');
             console.log(`Test Suite: Chrome Debugger Cache Cleared`);
-            resolve();
+            resolve(response);
         });
     });
 };
 
 const disableCache = (tabID) => {
     return new Promise((resolve, reject) => {
-        chrome.debugger.sendCommand({ tabId: tabID }, 'Network.setCacheDisabled', { cacheDisabled: true }, function () {
+        chrome.debugger.sendCommand({ tabId: tabID }, 'Network.setCacheDisabled', { cacheDisabled: true }, function (
+            response
+        ) {
             if (chrome.runtime.lastError) {
                 sendConsoleMessage(
                     `Test Error: Remote Protocol Disable Cache Error: ${chrome.runtime.lastError.message}`
@@ -600,14 +878,14 @@ const disableCache = (tabID) => {
             }
             sendConsoleMessage('Browser cache disabled');
             console.log(`Test Suite: Chrome Debugger Cache Disabled`);
-            resolve();
+            resolve(response);
         });
     });
 };
 
 const pageNavigate = (tabID, url) => {
     return new Promise((resolve, reject) => {
-        chrome.debugger.sendCommand({ tabId: tabID }, 'Page.navigate', { url: url }, function () {
+        chrome.debugger.sendCommand({ tabId: tabID }, 'Page.navigate', { url: url }, function (response) {
             if (chrome.runtime.lastError) {
                 sendConsoleMessage(
                     `Test Error: Remote Protocol Page Navigate Error: ${chrome.runtime.lastError.message}`
@@ -617,21 +895,23 @@ const pageNavigate = (tabID, url) => {
             }
             sendConsoleMessage(`Navigated to <a target="_blank" href="${url}">${url}</a>`);
             console.log(`Test Suite: Chrome Debugger Navigated to URL: ${url}`);
-            resolve();
+            resolve(response);
         });
     });
 };
 
 const dismissAlert = (tabID) => {
     return new Promise((resolve, reject) => {
-        chrome.debugger.sendCommand({ tabId: tabID }, 'Page.handleJavaScriptDialog', { accept: true }, function () {
+        chrome.debugger.sendCommand({ tabId: tabID }, 'Page.handleJavaScriptDialog', { accept: true }, function (
+            response
+        ) {
             if (chrome.runtime.lastError) {
                 sendConsoleMessage(`Test Error: Dismiss Alert Arror: ${chrome.runtime.lastError.message}`);
                 reject(chrome.runtime.lastError.message);
                 return;
             }
             sendConsoleMessage(`Dismissed alert dialog on <a target="_blank" href="${url}">${url}</a>`);
-            resolve();
+            resolve(response);
         });
     });
 };

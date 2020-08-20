@@ -24,7 +24,7 @@ export const History = () => {
     return (
         <>
             <Container text textAlign='center'>
-                <PageTitle title='History' subtitle='View saved jobs' />
+                <PageTitle title='History' subtitle='Add names and view saved jobs' />
             </Container>
             <Container fluid>
                 <ResponsiveGridLayout

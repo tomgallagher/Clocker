@@ -234,8 +234,10 @@ const navigationEventObservable = merge(
 );
 
 const streamlinedOnBeforeRequest = navigationEventObservable.pipe(
-    //then we only want certain events
-    filter((navObject) => navObject.eventType == 'onBeforeNavigate'),
+    //then we only want certain events - sometimes the onbeforenavigate event is missed so we have the onCommited backup to start us off
+    filter((navObject) => navObject.eventType == 'onBeforeNavigate' || navObject.eventType == 'onCommitted'),
+    //then we only want to take one
+    take(1),
     //get only the properties we care about - url and timestamp, while adding a marker
     map((navObject) => {
         var streamlinedObject = Object.assign(
@@ -244,6 +246,7 @@ const streamlinedOnBeforeRequest = navigationEventObservable.pipe(
                 command: navObject.eventType,
                 url: navObject.url,
                 timestamp: Date.now(),
+                tabId: navObject.tabId,
             }
         );
         return streamlinedObject;
@@ -448,7 +451,15 @@ const masterDataObservable = streamlinedOnBeforeRequest.pipe(
                             obj.timestamp > requestObj.timestamp
                     ),
                     //add some seconds to allow post-window.load advertising and lazy loaded images to load or be blocked - this does not affect the timestamps, just test running
-                    delay(5000)
+                    delay(5000),
+                    //then add the metrics array to the object
+                    switchMap(
+                        () => from(getPerformanceMetrics(requestObj.tabId)),
+                        (obj, metricsObject) => {
+                            obj.metrics = new Map(metricsObject.metrics.map((i) => [i.name, i.value]));
+                            return obj;
+                        }
+                    )
                 ),
                 //make sure we know when errors happen - when resources are blocked, or otherwise fail to load
                 onWebRequestErrorObservable.pipe(
@@ -522,6 +533,8 @@ const masterDataObservable = streamlinedOnBeforeRequest.pipe(
                 //keeping track of errors - filter out the empty object value we start with to ensure emission of zip
                 errorArray: onErrorArray.filter((error) => error.type !== 'dummyError'),
                 errorCount: onErrorArray.filter((error) => error.type !== 'dummyError').length,
+                //keeping track of metrics
+                metrics: onComplete.metrics,
             });
             //then we need to do some work to divide everything in the data usage lookup object according to resource type
             //loop through and allocate to arrays

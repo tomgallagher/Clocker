@@ -30,6 +30,7 @@ class RawData {
             websocketCount: 0,
             errorArray: [],
             errorCount: 0,
+            metrics: null,
         };
 
         // then we can take the name, id, createdAt and updatedAt values from the user interface job

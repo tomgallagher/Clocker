@@ -37,6 +37,7 @@ class Page {
                 websocketRequestsAverage: 0,
                 errorArray: 0,
                 errorCount: 0,
+                metricsArray: [],
             },
             screenshot: 'N/A',
         };
@@ -129,6 +130,8 @@ class Page {
             this.minorResources.errorArray = this.iterationsArray.map((iteration, index) => ({
                 [index]: iteration.errorArray,
             }));
+            //then we want to collect the metrics into the metrics array
+            this.minorResources.metricsArray = this.iterationsArray.map((iteration) => iteration.metrics);
         }
     };
 }

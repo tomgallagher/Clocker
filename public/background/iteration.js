@@ -36,6 +36,8 @@ class Iteration {
             //note the addition of the error arrays
             errorArray: [],
             errorCount: 0,
+            //and the metrics
+            metrics: null,
         };
 
         // then we can take the name, id, createdAt and updatedAt values from the user interface job
