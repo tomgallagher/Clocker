@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Checkbox } from 'semantic-ui-react';
 import { observer } from 'mobx-react';
 import { runInAction } from 'mobx';
 import { useStores } from './../../hooks/useStores';
+import { EditableDisplayNameTableCell } from './editableDisplayTableCell';
 import { SemanticTable } from './../../components/tables/table';
 
 export const JobsTable = observer(() => {
@@ -15,31 +16,6 @@ export const JobsTable = observer(() => {
         const jobIndex = JobStore.jobs.findIndex((job) => job.id === jobId);
         runInAction(() => (JobStore.displayIndex = jobIndex));
     };
-    //we need to format some cells that are non-standard
-    const EditableNameCell = ({ value, row }) => {
-        //save input value as local state
-        const [textValue, setTextValue] = useState(value);
-        //each name cell needs a handler
-        const handleOnChange = (event) => {
-            //first we update the state so the input reflects
-            setTextValue(event.target.value);
-            //then we find the job using the row data id and update the name property
-            const jobId = row.original.id;
-            const jobIndex = JobStore.jobs.findIndex((job) => job.id === jobId);
-            //then we run the name change in action
-            runInAction(() => (JobStore.jobs[jobIndex].name = event.target.value));
-        };
-
-        return (
-            <input
-                value={textValue}
-                //we do not want any of the row handler functions firing when we click on an editable cell
-                onClick={(event) => event.stopPropagation()}
-                //we need to handle the change
-                onChange={handleOnChange}
-            />
-        );
-    };
     const DateCell = ({ value }) => <div>{`${new Date(value).toLocaleString()}`}</div>;
     const CheckboxCell = ({ value }) => <Checkbox disabled defaultChecked={value} />;
     // columns are headers with the accessor, referring to the "key" in the data
@@ -48,7 +24,7 @@ export const JobsTable = observer(() => {
         {
             Header: 'Details',
             columns: [
-                { Header: 'Name', accessor: 'name', Cell: EditableNameCell },
+                { Header: 'Name', accessor: 'name', Cell: EditableDisplayNameTableCell },
                 { Header: 'Date', accessor: 'updatedtAt', Cell: DateCell },
                 { Header: 'Browser', accessor: 'browserName' },
                 { Header: 'System', accessor: 'operatingSystem' },

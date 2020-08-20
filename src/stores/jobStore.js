@@ -310,6 +310,7 @@ export class Job {
 }
 
 decorate(Job, {
+    name: observable,
     consoleMessages: observable,
     pages: observable,
     //the job must contain reporting stats on its contained pages, the average for the important indicators

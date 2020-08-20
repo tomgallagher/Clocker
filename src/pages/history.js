@@ -4,11 +4,11 @@ import { runInAction } from 'mobx';
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import { useStores } from './../hooks/useStores';
 import { DefaultHistoryLayouts } from './../components/history/historyLayout';
-import { PageTitle } from './../components/pageTitle.js';
 import { GridItem } from './../components/gridItem';
 import { JobsTable } from '../components/history/jobsTable';
 import { DisplayPageTable } from '../components/history/displayPageTable';
 import { DisplayMetricsTable } from '../components/history/displayMetricsTable';
+import { HistoryTitle } from '../components/history/historyTitle';
 
 // <ResponsiveReactGridLayout> takes width to calculate positions on drag events.
 // WidthProvider can be used to automatically determine width upon initialization and window resize events.
@@ -25,7 +25,7 @@ export const History = () => {
     return (
         <>
             <Container text textAlign='center'>
-                <PageTitle title='History' subtitle='Add names and view saved jobs' />
+                <HistoryTitle />
             </Container>
             <Container fluid>
                 <ResponsiveGridLayout
