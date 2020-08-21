@@ -25,7 +25,7 @@ const pageSniffer = (evt) => {
 document.addEventListener('readystatechange', pageSniffer, false);
 //here we add a message listener to pass control of the service worker kill operations to the testing suite
 chrome.runtime.onMessage.addListener((request, _, sendResponse) => {
-    if (request.command == 'STOP_SERVICE_WORKER') {
+    if (navigator.serviceWorker && request.command == 'STOP_SERVICE_WORKER') {
         navigator.serviceWorker.getRegistrations().then((registrations) => {
             //returns installed service workers
             if (registrations.length > 0) {
@@ -39,9 +39,11 @@ chrome.runtime.onMessage.addListener((request, _, sendResponse) => {
                     if (index === registrations.length - 1) {
                         scopes.length > 1
                             ? sendResponse({
-                                  message: `Service workers with scopes ${registration.scopes.join(',')} disabled`,
+                                  message: `Service workers with scopes <a>${registration.scopes.join(
+                                      ','
+                                  )}</a> disabled`,
                               })
-                            : sendResponse({ message: `Service worker with scope ${scopes[0]} disabled` });
+                            : sendResponse({ message: `Service worker with scope <a>${scopes[0]}</a> disabled` });
                     }
                 }
             } else {
@@ -52,5 +54,10 @@ chrome.runtime.onMessage.addListener((request, _, sendResponse) => {
             }
         });
         return true;
+    } else {
+        //here we deal with the situation where we have no registrations at all
+        sendResponse({
+            message: `No service workers registered for <a target="_blank" href="${location.href}">${location.href}</a>`,
+        });
     }
 });

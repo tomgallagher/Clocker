@@ -383,7 +383,14 @@ const resourceTimingObservable = debuggerEventObservable.pipe(
             url: networkObject.infoObject.response.url,
             timing: networkObject.infoObject.response.timing,
         };
-    })
+    }),
+    scan((headersTimingArray, value) => {
+        //if the timing object has a receiveHeadersEnd property, then lets save that to the arrau
+        value.timing ? headersTimingArray.push(value.timing.receiveHeadersEnd) : null;
+        //then return the array for next scan
+        return headersTimingArray;
+        //seed with the initial array
+    }, [])
 );
 
 /*
@@ -419,42 +426,56 @@ const completeObservable = merge(completeNavigationObservable, completeMessaging
 
 //COMBINE THE TWO DATA USAGE OBSERVABLES FOR A COMPLETE PICTURE
 
-const combinedDataUsageObservable = merge(dataUsageObservable, iframeDataUsageObservable);
+const combinedDataUsageObservable = merge(dataUsageObservable, iframeDataUsageObservable).pipe(
+    scan((lookupObject, value) => {
+        //set the key of the lookup object as equal to the request id - these come in different formats according to whether from OnComplete or debugger network event
+        lookupObject[value.requestId] = value.encodedDataLength;
+        //after saving the encoded data length return the lookup object for the next item to be scanned into it
+        return lookupObject;
+        //seed with the initial object
+    }, {})
+);
 
 //COMBINE THE TWO RESOURCE TYPE OBSERVABLES FOR A COMPLETE PICTURE
 
-const combinedResourceTypeObservable = merge(resourceTypeObservable, iframeResourceTypeObservable);
+const combinedResourceTypeObservable = merge(resourceTypeObservable, iframeResourceTypeObservable).pipe(
+    scan((lookupObject, value) => {
+        //the key is the request ID as well so we can link data sizes with resource categories
+        lookupObject[value.requestId] = value.resourceType;
+        //return the object for the next scan
+        return lookupObject;
+        //seed with the initial object
+    }, {})
+);
 
-//then we put them all together, starting with the onBeforeRequest - this should emit when the complete event occurs
-
-const masterDataObservable = streamlinedOnBeforeRequest.pipe(
-    //once we have the initial emission of the onBeforeRequest, then we need to turn that into an observable that collects raw data into our object
-    switchMap(
-        (requestObj) =>
+const combinedEmissions$ = (requestObj) => {
+    //we want to return all the emissions once the request object from onBeforeNavigate or onCommitted has happened
+    return of(requestObj).pipe(
+        concatMap((reqObj) =>
             zip(
                 //make sure we know when the DOM content loaded event happens
                 interactiveObservable.pipe(
                     filter(
                         (obj) =>
                             //this can be a source of bugs when http site in our text file changes to https as the event will never fire
-                            new URL(obj.url).origin === new URL(requestObj.url).origin &&
+                            new URL(obj.url).origin === new URL(reqObj.url).origin &&
                             //we only want events that happen after the start signalled by the onBeforeRequest
-                            obj.timestamp > requestObj.timestamp
+                            obj.timestamp > reqObj.timestamp
                     )
                 ),
                 //make sure we know when the complete event happens
                 completeObservable.pipe(
                     filter(
                         (obj) =>
-                            new URL(obj.url).origin === new URL(requestObj.url).origin &&
+                            new URL(obj.url).origin === new URL(reqObj.url).origin &&
                             //we only want events that happen after the start signalled by the onBeforeRequest
-                            obj.timestamp > requestObj.timestamp
+                            obj.timestamp > reqObj.timestamp
                     ),
                     //add some seconds to allow post-window.load advertising and lazy loaded images to load or be blocked - this does not affect the timestamps, just test running
                     delay(5000),
                     //then add the metrics array to the object
                     switchMap(
-                        () => from(getPerformanceMetrics(requestObj.tabId)),
+                        () => from(getPerformanceMetrics(reqObj.tabId)),
                         (obj, metricsObject) => {
                             obj.metrics = new Map(metricsObject.metrics.map((i) => [i.name, i.value]));
                             return obj;
@@ -475,36 +496,23 @@ const masterDataObservable = streamlinedOnBeforeRequest.pipe(
                     }, [])
                 ),
                 //this combines byte load output from debugger network events and onWebRequestComplete iframes, returns a lookup object with request IDs
-                combinedDataUsageObservable.pipe(
-                    scan((lookupObject, value) => {
-                        //set the key of the lookup object as equal to the request id - these come in different formats according to whether from OnComplete or debugger network event
-                        lookupObject[value.requestId] = value.encodedDataLength;
-                        //after saving the encoded data length return the lookup object for the next item to be scanned into it
-                        return lookupObject;
-                        //seed with the initial object
-                    }, {})
-                ),
+                combinedDataUsageObservable,
                 //this combines resource type from debugger network events and onWebRequestComplete iframes, returns a lookup object with request IDs
-                combinedResourceTypeObservable.pipe(
-                    scan((lookupObject, value) => {
-                        //the key is the request ID as well so we can link data sizes with resource categories
-                        lookupObject[value.requestId] = value.resourceType;
-                        //return the object for the next scan
-                        return lookupObject;
-                        //seed with the initial object
-                    }, {})
-                ),
+                combinedResourceTypeObservable,
                 //get the resource timing information, if any, for inspection
-                resourceTimingObservable.pipe(
-                    scan((headersTimingArray, value) => {
-                        //if the timing object has a receiveHeadersEnd property, then lets save that to the arrau
-                        value.timing ? headersTimingArray.push(value.timing.receiveHeadersEnd) : null;
-                        //then return the array for next scan
-                        return headersTimingArray;
-                        //seed with the initial array
-                    }, [])
-                )
-            ),
+                resourceTimingObservable
+            )
+        )
+        //tap((x) => console.log(x))
+    );
+};
+
+//then we put them all together, starting with the onBeforeRequest - this should emit when the complete event occurs
+
+const masterDataObservable = streamlinedOnBeforeRequest.pipe(
+    //once we have the initial emission of the onBeforeRequest, then we need to turn that into an observable that collects raw data into our object
+    switchMap(
+        (requestObj) => combinedEmissions$(requestObj),
         (
             //we take the initial onBefore request in the result selector function
             onBeforeRequest,

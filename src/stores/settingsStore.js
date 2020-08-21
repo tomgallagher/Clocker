@@ -11,7 +11,7 @@ export class Settings {
         this.latency = 40;
         this.pageIterations = 2;
         this.withCache = false;
-        this.withServiceWorker = true;
+        this.withServiceWorker = false;
         this.screenshotWidth = 600;
         //UI settings
         this.customUrlLists = [];

@@ -15,6 +15,7 @@ const {
     toArray,
     mapTo,
     shareReplay,
+    catchError,
 } = rxjs.operators;
 
 //we need the active job and the active job observable subscription in global scope
@@ -147,7 +148,9 @@ const runJob = (payload) => {
         //report results and errors
         .subscribe(
             (res) => console.log(res),
-            (err) => sendConsoleMessage(`Cannot complete test job with ID: ${payload.id}: unrecoverable error: ${err}`),
+            (err) => {
+                sendConsoleMessage(`Cannot complete test job with ID: ${payload.id}: unrecoverable error: ${err}`);
+            },
             () => {
                 sendConsoleMessage(`Completed test job with ID: ${payload.id}`).then(() =>
                     stopDebugger(activeJob.tabId)
@@ -217,7 +220,10 @@ const runIterations$ = (page) => {
         //this repeats as many times as required
         repeat(page.pageIterations),
         //then we want all the iterations collected as an array once complete
-        toArray()
+        scan((iterationsArray, iteration) => {
+            iterationsArray.push(iteration);
+            return iterationsArray;
+        }, [])
     );
 };
 
@@ -286,8 +292,15 @@ const runIteration$ = (page) => {
                         errorCount,
                         metrics,
                     },
+                    //then the placeholder for the output of the navigate and scroll
+                    navigated,
                 ]
             ) => {
+                console.log(
+                    `%cTest Suite: single iteration navigated: ${navigated}`,
+                    'color: darkred; font-size: normal;'
+                );
+                console.log(metrics);
                 //CONVERT RAW DATA CLASS TO ITERATION CLASS
 
                 //timing stats
@@ -814,7 +827,7 @@ const stopServiceWorker = (tabId) => {
                 return;
             }
             sendConsoleMessage(`${response.message}`);
-            resolve();
+            resolve(response);
         });
     });
 };
