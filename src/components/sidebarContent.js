@@ -82,7 +82,12 @@ export const SidebarContent = () => {
                         </li>
                         <li style={{ paddingBottom: '10px' }}>
                             The page results table has a master/detail view. Click on any page row to get screenshot,
-                            further stats and blocking/error reports in the sidebar
+                            further stats and blocking/error reports in the sidebar.
+                        </li>
+                        <li style={{ paddingBottom: '10px' }}>
+                            Accurate reporting of image load statistics depends upon the testing tab remaining the
+                            active viewed tab. Tests can be run with live monitoring of the Results page if image
+                            statistics are not the focus of testing.
                         </li>
                     </ul>
                 </SidebarItem>

@@ -16,6 +16,7 @@ const {
     mapTo,
     shareReplay,
     catchError,
+    debounceTime,
 } = rxjs.operators;
 
 //we need the active job and the active job observable subscription in global scope
@@ -54,7 +55,12 @@ chrome.runtime.onMessage.addListener((request) => {
                     //then we close the test tab
                     .then(() => closeTestTab(activeJob.tabId))
                     //then we send the message
-                    .then(() => sendConsoleMessage(`Aborted Test Job: ${activeJob.id}`));
+                    .then(() => sendConsoleMessage(`Aborted Test Job: ${activeJob.id}`))
+                    //then finally we reset the job
+                    .then(() => {
+                        activeJob = null;
+                        activeJobSubscription = null;
+                    });
             }
             break;
         default:
@@ -62,18 +68,75 @@ chrome.runtime.onMessage.addListener((request) => {
 });
 
 //then we want to be responsive to user detaching the debugger, when either the tab is being closed or Chrome DevTools is being invoked for the attached tab.
-chrome.debugger.onDetach.addListener((_, reason) => {
+//this also gets hit when the site disables the debugger
+chrome.debugger.onDetach.addListener((source, reason) => {
     //first we stop the subscription, if there is an active on
     if (activeJobSubscription && reason === 'canceled_by_user') {
         //first we stop the subscription, which will prevent any further processing
         activeJobSubscription.unsubscribe();
         //then we close the test tab
-        closeTestTab(activeJob.tabId).then(() =>
+        closeTestTab(source.tabId)
             //then we send the message
-            sendConsoleMessage(`Aborted Test Job: ${activeJob.id} as debugger detached when ${reason}`)
-        );
+            .then(() => sendConsoleMessage(`Aborted Test Job: ${activeJob.id} as debugger detached when ${reason}`))
+            //then finally we reset the job
+            .then(() => {
+                activeJob = null;
+                activeJobSubscription = null;
+            });
     }
 });
+
+//DETACH / ATTACH OBSERVABLE RETURNS CURRENT STATE OF DEBUGGER ATTACHMENT
+const debuggerDetached$ = fromEventPattern(
+    (handler) => chrome.debugger.onDetach.addListener(handler),
+    (handler) => chrome.debugger.onDetach.removeListener(handler),
+    (source, reason) => ({ source: source, reason: reason })
+).pipe(share());
+
+const debuggerOff$ = debuggerDetached$.pipe(
+    //we only care about certain detach events
+    filter((event) => event.reason === 'target_closed'),
+    //then we want to map the debugger off to false
+    mapTo(false)
+);
+
+const debuggerOn$ = debuggerDetached$.pipe(
+    //we only care about certain detach events
+    filter((event) => event.reason === 'target_closed'),
+    //then we want to reattach the debugger
+    switchMap(
+        (event) => from(attachDebugger(event.source.tabId)),
+        (event) => event
+    ),
+    //then we want to map the debugger off to false
+    mapTo(true)
+);
+
+const debouncedDebugger$ = (iteration) => {
+    return merge(debuggerOff$, debuggerOn$).pipe(
+        // Only emit when debugger emits that it has been reattached
+        filter((v) => v),
+        //wait for 0.5 second between on/off toggles to emit current value
+        debounceTime(500),
+        //then a simple continuation
+        concatMap(() => from(sendConsoleMessage(`Debugger has become detached: re-attaching`))),
+        concatMap(() => from(enableNetworkEvents(iteration.tabId))),
+        concatMap(() => from(enablePageEvents(iteration.tabId))),
+        concatMap(() => from(enablePerformanceMetrics(iteration.tabId))),
+        concatMap(() => from(enableServiceWorkerEvents(iteration.tabId))),
+        concatMap(() =>
+            from(
+                setNetworkConditions(
+                    activeJob.tabId,
+                    activeJob.latency,
+                    activeJob.bandwidth_down,
+                    activeJob.bandwidth_up
+                )
+            )
+        ),
+        concatMap(() => from(addAlertHandler(iteration.tabId)))
+    );
+};
 
 //TEST START FUNCTION
 
@@ -114,9 +177,14 @@ const runJob = (payload) => {
                 (job) => from(enablePageEvents(job.tabId)),
                 (job) => job
             ),
-            //we need to have a view of page events for alert controls etc,
+            //we need to have a view of performance events for metrics etc,
             switchMap(
                 (job) => from(enablePerformanceMetrics(job.tabId)),
+                (job) => job
+            ),
+            //we need to have a view of service worker events for stop command etc,
+            switchMap(
+                (job) => from(enableServiceWorkerEvents(job.tabId)),
                 (job) => job
             ),
             //we need to set the network conditions
@@ -127,6 +195,11 @@ const runJob = (payload) => {
             //we need an alert handler so alert boxes do not stop the tests
             switchMap(
                 (job) => from(addAlertHandler(job.tabId)),
+                (job) => job
+            ),
+            //then we need to switch to the active tab to get accurate image loads
+            switchMap(
+                (job) => from(switchToTab(job.tabId)),
                 (job) => job
             ),
             //so set up is now complete and we can now start to work each job url into a page, then each iteration of that page
@@ -152,9 +225,17 @@ const runJob = (payload) => {
                 sendConsoleMessage(`Cannot complete test job with ID: ${payload.id}: unrecoverable error: ${err}`);
             },
             () => {
-                sendConsoleMessage(`Completed test job with ID: ${payload.id}`).then(() =>
-                    stopDebugger(activeJob.tabId)
-                );
+                //then we detach the debugger
+                stopDebugger(activeJob.tabId)
+                    //then we close the test tab
+                    .then(() => closeTestTab(activeJob.tabId))
+                    //then we send the message
+                    .then(() => sendConsoleMessage(`Completed Test Job: ${activeJob.id}`))
+                    //then finally we reset the job
+                    .then(() => {
+                        activeJob = null;
+                        activeJobSubscription = null;
+                    });
             }
         );
 };
@@ -220,10 +301,9 @@ const runIterations$ = (page) => {
         //this repeats as many times as required
         repeat(page.pageIterations),
         //then we want all the iterations collected as an array once complete
-        scan((iterationsArray, iteration) => {
-            iterationsArray.push(iteration);
-            return iterationsArray;
-        }, [])
+        //we could use scan, which halts the test if there are any errors in the data observable
+        //but if we use toArray, the following urls continue to run and we just get an empty array
+        toArray()
     );
 };
 
@@ -249,6 +329,18 @@ const runIteration$ = (page) => {
                 ),
             (iteration) => iteration
         ),
+        //then we do the same with service workers
+        switchMap(
+            (iteration) =>
+                from(
+                    page.withServiceWorker
+                        ? //if the user has chosen to have the cache active then just resolve
+                          Promise.resolve()
+                        : //otherwise this clears the cache each time we start an iteration
+                          Promise.all([stopAllServiceWorkers(iteration.tabId)])
+                ),
+            (iteration) => iteration
+        ),
         //then we switchMap into the actual execution of the commands, using combineLatest
         switchMap(
             (iteration) =>
@@ -256,7 +348,9 @@ const runIteration$ = (page) => {
                     //this is the key data collection observable at dataCollection.js - only emits 5 seconds after page completes
                     masterDataObservable.pipe(tap((data) => console.log(data))),
                     //this opens the page and injects the DCL and complete down/up scroll actions into runtime, this will emit almost instantly
-                    from(navigateAndScroll(iteration.tabId, iteration.url))
+                    from(navigateAndScroll(iteration.tabId, iteration.url)),
+                    //this handles odd detachment of debugger on some pages
+                    debouncedDebugger$(iteration).pipe(startWith(false))
                 ),
             (
                 //with result selector function we take iteration and array from combineLatest
@@ -300,7 +394,6 @@ const runIteration$ = (page) => {
                     `%cTest Suite: single iteration navigated: ${navigated}`,
                     'color: darkred; font-size: normal;'
                 );
-                console.log(metrics);
                 //CONVERT RAW DATA CLASS TO ITERATION CLASS
 
                 //timing stats
@@ -388,14 +481,20 @@ const openTestTab = () => {
 };
 
 const closeTestTab = (tabID) => {
-    return new Promise((resolve, reject) => {
-        chrome.tabs.remove(tabID, function () {
-            sendConsoleMessage(`Closed Testing Tab with ID: ${tabID}`)
-                .then(() => resolve())
-                .catch((err) => {
-                    sendConsoleMessage(`Test Error: testSuiteHandler.closeTestTab: FAILED ON: ${err}`);
-                    reject(err);
+    return new Promise((resolve) => {
+        //see which tabs are open
+        chrome.tabs.query({}, (tabs) => {
+            //we only need the ids
+            const tabIdArray = tabs.map((tab) => tab.id);
+            //if the tab is there then we need to close
+            if (tabIdArray.includes(tabID)) {
+                chrome.tabs.remove(tabID, () => {
+                    sendConsoleMessage(`Closed Testing Tab with ID: ${tabID}`).then(() => resolve(true));
                 });
+            } else {
+                //otherwise we just resolve
+                resolve(false);
+            }
         });
     });
 };
@@ -482,8 +581,8 @@ const getActiveTabId = () => {
 
 const switchToTab = (tabId) => {
     return new Promise((resolve) => {
-        chrome.tabs.update(tabId, { selected: true }, () => {
-            setTimeout(() => resolve(), 200);
+        chrome.tabs.update(tabId, { selected: true }, (response) => {
+            setTimeout(() => resolve(response), 200);
         });
     });
 };
@@ -494,6 +593,7 @@ const stopDebugger = (tabId) => {
     return new Promise((resolve) => {
         disableNetworkEvents(tabId)
             .then(() => disablePageEvents(tabId))
+            .then(() => disableServiceWorkerEvents(tabId))
             .then(() => disablePerformanceMetrics(tabId))
             .then(() => detachDebugger(tabId))
             .then(() => resolve());
@@ -629,6 +729,55 @@ const disablePerformanceMetrics = (tabID) => {
                 return;
             }
             console.log(`Test Suite: Chrome Debugger Performance Metrics Disabled`);
+            resolve(response);
+        });
+    });
+};
+
+const enableServiceWorkerEvents = (tabID) => {
+    return new Promise((resolve, reject) => {
+        chrome.debugger.sendCommand({ tabId: tabID }, 'ServiceWorker.enable', {}, function (response) {
+            if (chrome.runtime.lastError) {
+                sendConsoleMessage(
+                    `Test Error: ServiceWorker Domain Enabling Error: ${chrome.runtime.lastError.message}`
+                );
+                reject(chrome.runtime.lastError.message);
+                return;
+            }
+            console.log(`Test Suite: Chrome Debugger ServiceWorker Domain Notifications Enabled`);
+            resolve(response);
+        });
+    });
+};
+
+const stopAllServiceWorkers = (tabID) => {
+    return new Promise((resolve, reject) => {
+        chrome.debugger.sendCommand({ tabId: tabID }, 'ServiceWorker.stopAllWorkers', {}, function (response) {
+            if (chrome.runtime.lastError) {
+                sendConsoleMessage(
+                    `Test Error: ServiceWorker stopAllWorkers Error: ${chrome.runtime.lastError.message}`
+                );
+                reject(chrome.runtime.lastError.message);
+                return;
+            }
+            console.log(`Test Suite: Chrome Debugger ServiceWorker stopAllWorkers completed`);
+            sendConsoleMessage('Service workers stopped');
+            resolve(response);
+        });
+    });
+};
+
+const disableServiceWorkerEvents = (tabID) => {
+    return new Promise((resolve, reject) => {
+        chrome.debugger.sendCommand({ tabId: tabID }, 'ServiceWorker.disable', {}, function (response) {
+            if (chrome.runtime.lastError) {
+                sendConsoleMessage(
+                    `Test Error: ServiceWorker Domain Enabling Error: ${chrome.runtime.lastError.message}`
+                );
+                reject(chrome.runtime.lastError.message);
+                return;
+            }
+            console.log(`Test Suite: Chrome Debugger ServiceWorker Domain Notifications Enabled`);
             resolve(response);
         });
     });
@@ -782,7 +931,7 @@ const scrollPageToTop = (tabID) => {
             'Runtime.evaluate',
             {
                 expression:
-                    "window.addEventListener('load', () => { window.scrollTo( { top: 0, left: 0, behavior: 'smooth' } ); });",
+                    "window.addEventListener('load', () => { setTimeout(() => window.scrollTo( { top: 0, left: 0, behavior: 'smooth' } ), 4000); });",
             },
             function () {
                 if (chrome.runtime.lastError) {

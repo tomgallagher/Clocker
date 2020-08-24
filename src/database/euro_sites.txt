@@ -50,10 +50,9 @@ https://www.lequipe.fr/
 https://www.commentcamarche.net/
 https://www.francetvinfo.fr/
 https://www.programme-tv.net/
-http://www.leparisien.fr/
+https://www.leparisien.fr/
 https://www.eurosport.fr/
 https://www.20minutes.fr/
-https://www.veepee.uk/authentication/
 https://www.t-online.de/
 https://www.derstandard.at/
 https://www.orf.at/
@@ -77,7 +76,7 @@ https://www.mediamarkt.es/
 https://www.gumtree.com/
 https://www.bbc.com/mundo
 https://cnnespanol.cnn.com/
-http://www.rtve.es/
+https://www.rtve.es/
 https://www.marca.com/
 https://www.carrefour.es/
 https://www.lanacion.com.ar/

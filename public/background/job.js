@@ -18,6 +18,9 @@ class Job {
             bandwidth_down: Math.round((userInterfaceJob.settings.bandwidth * 1000 ** 2) / 8),
             //we make the assumption that upload speeds are going to be 1/10 of download speeds
             bandwidth_up: Math.round((userInterfaceJob.settings.bandwidth * 1000 ** 2) / 8 / 10),
+            //then we need to make the wait interval for all assets to load inversely proportionate to the bandwidth
+            //we always wait for four second, then we need to add 1 to six seconds depending on bandwidth
+            asset_wait_interval: Math.round(4000 + 1000 * Math.min(20 / userInterfaceJob.settings.bandwidth, 6)),
             //latency is saved as a number and is required as a number
             latency: userInterfaceJob.settings.latency,
             //page iterations need to be part of the test

@@ -383,14 +383,7 @@ const resourceTimingObservable = debuggerEventObservable.pipe(
             url: networkObject.infoObject.response.url,
             timing: networkObject.infoObject.response.timing,
         };
-    }),
-    scan((headersTimingArray, value) => {
-        //if the timing object has a receiveHeadersEnd property, then lets save that to the arrau
-        value.timing ? headersTimingArray.push(value.timing.receiveHeadersEnd) : null;
-        //then return the array for next scan
-        return headersTimingArray;
-        //seed with the initial array
-    }, [])
+    })
 );
 
 /*
@@ -426,27 +419,11 @@ const completeObservable = merge(completeNavigationObservable, completeMessaging
 
 //COMBINE THE TWO DATA USAGE OBSERVABLES FOR A COMPLETE PICTURE
 
-const combinedDataUsageObservable = merge(dataUsageObservable, iframeDataUsageObservable).pipe(
-    scan((lookupObject, value) => {
-        //set the key of the lookup object as equal to the request id - these come in different formats according to whether from OnComplete or debugger network event
-        lookupObject[value.requestId] = value.encodedDataLength;
-        //after saving the encoded data length return the lookup object for the next item to be scanned into it
-        return lookupObject;
-        //seed with the initial object
-    }, {})
-);
+const combinedDataUsageObservable = merge(dataUsageObservable, iframeDataUsageObservable);
 
 //COMBINE THE TWO RESOURCE TYPE OBSERVABLES FOR A COMPLETE PICTURE
 
-const combinedResourceTypeObservable = merge(resourceTypeObservable, iframeResourceTypeObservable).pipe(
-    scan((lookupObject, value) => {
-        //the key is the request ID as well so we can link data sizes with resource categories
-        lookupObject[value.requestId] = value.resourceType;
-        //return the object for the next scan
-        return lookupObject;
-        //seed with the initial object
-    }, {})
-);
+const combinedResourceTypeObservable = merge(resourceTypeObservable, iframeResourceTypeObservable);
 
 const combinedEmissions$ = (requestObj) => {
     //we want to return all the emissions once the request object from onBeforeNavigate or onCommitted has happened
@@ -472,7 +449,7 @@ const combinedEmissions$ = (requestObj) => {
                             obj.timestamp > reqObj.timestamp
                     ),
                     //add some seconds to allow post-window.load advertising and lazy loaded images to load or be blocked - this does not affect the timestamps, just test running
-                    delay(5000),
+                    delay(activeJob ? activeJob.asset_wait_interval : 5000),
                     //then add the metrics array to the object
                     switchMap(
                         () => from(getPerformanceMetrics(reqObj.tabId)),
@@ -496,11 +473,35 @@ const combinedEmissions$ = (requestObj) => {
                     }, [])
                 ),
                 //this combines byte load output from debugger network events and onWebRequestComplete iframes, returns a lookup object with request IDs
-                combinedDataUsageObservable,
+                combinedDataUsageObservable.pipe(
+                    scan((lookupObject, value) => {
+                        //set the key of the lookup object as equal to the request id - these come in different formats according to whether from OnComplete or debugger network event
+                        lookupObject[value.requestId] = value.encodedDataLength;
+                        //after saving the encoded data length return the lookup object for the next item to be scanned into it
+                        return lookupObject;
+                        //seed with the initial object
+                    }, {})
+                ),
                 //this combines resource type from debugger network events and onWebRequestComplete iframes, returns a lookup object with request IDs
-                combinedResourceTypeObservable,
+                combinedResourceTypeObservable.pipe(
+                    scan((lookupObject, value) => {
+                        //the key is the request ID as well so we can link data sizes with resource categories
+                        lookupObject[value.requestId] = value.resourceType;
+                        //return the object for the next scan
+                        return lookupObject;
+                        //seed with the initial object
+                    }, {})
+                ),
                 //get the resource timing information, if any, for inspection
-                resourceTimingObservable
+                resourceTimingObservable.pipe(
+                    scan((headersTimingArray, value) => {
+                        //if the timing object has a receiveHeadersEnd property, then lets save that to the arrau
+                        value.timing ? headersTimingArray.push(value.timing.receiveHeadersEnd) : null;
+                        //then return the array for next scan
+                        return headersTimingArray;
+                        //seed with the initial array
+                    }, [])
+                )
             )
         )
         //tap((x) => console.log(x))

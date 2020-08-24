@@ -1,6 +1,6 @@
 https://www.opposingviews.com/
 https://www.americanow.com/
-https://www.slate.com/
+https://slate.com/
 https://www.politico.com/
 https://www.fandango.com/
 https://www.urbandictionary.com/
@@ -10,7 +10,6 @@ https://www.usmagazine.com/
 https://www.eonline.com/
 https://www.adobe.com/
 https://www.distractify.com/
-http://yourdailydish.com/
 https://www.vox.com/
 https://www.usps.com/
 https://www.bustle.com/
@@ -26,7 +25,6 @@ https://www.discover.com/
 https://www.howtogeek.com/
 https://www.nbcsports.com/
 https://www.westernjournal.com/
-https://www.usatoday.com/
 https://www.google.com/
 https://weather.com/
 https://www.inquisitr.com/
