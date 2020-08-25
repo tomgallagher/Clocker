@@ -81,13 +81,18 @@ export const SidebarContent = () => {
                             </ul>
                         </li>
                         <li style={{ paddingBottom: '10px' }}>
-                            The page results table has a master/detail view. Click on any page row to get screenshot,
-                            further stats and blocking/error reports in the sidebar.
+                            Accurate reporting of image load statistics depends on the testing tab being{' '}
+                            <strong>the active viewed tab</strong>. Tests can be run with live monitoring of the Results
+                            page, if image statistics are not the focus of testing.
                         </li>
                         <li style={{ paddingBottom: '10px' }}>
-                            Accurate reporting of image load statistics depends upon the testing tab remaining the
-                            active viewed tab. Tests can be run with live monitoring of the Results page if image
-                            statistics are not the focus of testing.
+                            The browser cache and service workers can distort statistics. On sites which make extensive
+                            use of service workers, these should be disallowed and multiple <strong>iterations</strong>{' '}
+                            selected to generate accurate reports.
+                        </li>
+                        <li style={{ paddingBottom: '10px' }}>
+                            The Page Results table has a master/detail view. Click on any page <strong>row</strong> to
+                            get screenshot, further stats and blocking/error reports in the sidebar.
                         </li>
                     </ul>
                 </SidebarItem>

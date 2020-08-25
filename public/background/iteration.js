@@ -5,6 +5,9 @@ class Iteration {
         var defaults = {
             url: 'N/A',
             tabId: 0,
+            latency: 0,
+            bandwidth_down: 0,
+            bandwidth_up: 0,
             startTime: Date.now(),
             //timing stats
             onCommittedTime: 0,

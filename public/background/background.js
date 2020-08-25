@@ -16,7 +16,6 @@ const {
     mapTo,
     shareReplay,
     catchError,
-    debounceTime,
 } = rxjs.operators;
 
 //we need the active job and the active job observable subscription in global scope
@@ -27,6 +26,8 @@ let activeJobSubscription = null;
 chrome.browserAction.onClicked.addListener(function () {
     chrome.tabs.create({ url: 'index.html' });
 });
+
+//MESSAGING EVENTS
 
 chrome.runtime.onMessage.addListener((request) => {
     switch (request.command) {
@@ -67,6 +68,45 @@ chrome.runtime.onMessage.addListener((request) => {
     }
 });
 
+//SOURCE OBSERVABLE - MESSAGE EVENTS
+
+//in data collection, this handles the interactive and complete readystate change messages that come from the page and pass them into an observer
+//in main thread, this handles pause / resume commands
+
+const messagingObservable = fromEventPattern(
+    (handler) => {
+        const wrapper = (request, sender, sendResponse) => {
+            //note the async is set to true by default to allow for slow JSON responses in the createDataResultStream combineLatest
+            const options = { async: false, request, sender, sendResponse };
+            handler(options);
+            return options.async;
+        };
+        console.log(`Test Suite: SUBSCRIBED to SHARED Sync Messaging Observer Instance`);
+        chrome.runtime.onMessage.addListener(wrapper);
+        return wrapper;
+    },
+    (handler, wrapper) => {
+        console.log(`Test Suite: UNSUBSCRIBED from SHARED Sync Messaging Observer Instance`);
+        chrome.runtime.onMessage.removeListener(wrapper);
+    }
+    //and this is shared amongst many subscribers
+).pipe(share());
+
+//PAUSE RESUME OBSERVABLE RETURNS CURRENT STATE OF UI COMMAND
+
+const pauseResume$ = merge(
+    messagingObservable.pipe(
+        filter((msg) => msg.request.command == 'pauseTest' || msg.request.command == 'abortTest'),
+        mapTo(false)
+    ),
+    messagingObservable.pipe(
+        filter((msg) => msg.request.command == 'resumeTest'),
+        mapTo(true)
+    )
+).pipe(startWith(true), shareReplay(1));
+
+//DEBUGGER DETACH EVENTS
+
 //then we want to be responsive to user detaching the debugger, when either the tab is being closed or Chrome DevTools is being invoked for the attached tab.
 //this also gets hit when the site disables the debugger
 chrome.debugger.onDetach.addListener((source, reason) => {
@@ -84,57 +124,49 @@ chrome.debugger.onDetach.addListener((source, reason) => {
                 activeJobSubscription = null;
             });
     }
+    //then we have to deal with the situation where service workers appear to detach the debugger
+    if (activeJobSubscription && reason === 'target_closed') {
+        //we need to log to the UI console where this happens
+        sendConsoleMessage(`Debugger has been detached '${reason}' on tab ${source.tabId}`);
+        console.log(`Debugger has been detached '${reason}' on tab ${source.tabId}`);
+    }
 });
 
-//DETACH / ATTACH OBSERVABLE RETURNS CURRENT STATE OF DEBUGGER ATTACHMENT
-const debuggerDetached$ = fromEventPattern(
-    (handler) => chrome.debugger.onDetach.addListener(handler),
-    (handler) => chrome.debugger.onDetach.removeListener(handler),
-    (source, reason) => ({ source: source, reason: reason })
-).pipe(share());
+//THEN WE HAVE AN OBERSVABLE TO ATTACH, OR RE-ATTACH, THE DEBUGGER IN THE STREAM
 
-const debuggerOff$ = debuggerDetached$.pipe(
-    //we only care about certain detach events
-    filter((event) => event.reason === 'target_closed'),
-    //then we want to map the debugger off to false
-    mapTo(false)
-);
-
-const debuggerOn$ = debuggerDetached$.pipe(
-    //we only care about certain detach events
-    filter((event) => event.reason === 'target_closed'),
-    //then we want to reattach the debugger
-    switchMap(
-        (event) => from(attachDebugger(event.source.tabId)),
-        (event) => event
-    ),
-    //then we want to map the debugger off to false
-    mapTo(true)
-);
-
-const debouncedDebugger$ = (iteration) => {
-    return merge(debuggerOff$, debuggerOn$).pipe(
-        // Only emit when debugger emits that it has been reattached
-        filter((v) => v),
-        //wait for 0.5 second between on/off toggles to emit current value
-        debounceTime(500),
-        //then a simple continuation
-        concatMap(() => from(sendConsoleMessage(`Debugger has become detached: re-attaching`))),
-        concatMap(() => from(enableNetworkEvents(iteration.tabId))),
-        concatMap(() => from(enablePageEvents(iteration.tabId))),
-        concatMap(() => from(enablePerformanceMetrics(iteration.tabId))),
-        concatMap(() => from(enableServiceWorkerEvents(iteration.tabId))),
-        concatMap(() =>
-            from(
-                setNetworkConditions(
-                    activeJob.tabId,
-                    activeJob.latency,
-                    activeJob.bandwidth_down,
-                    activeJob.bandwidth_up
-                )
-            )
+const debuggerAttach$ = (incomingJobOrIteration) => {
+    return of(incomingJobOrIteration).pipe(
+        //then we need to attach the debugger if it is not attached
+        switchMap(
+            (currentItem) => from(attachDebugger(currentItem.tabId)),
+            (currentItem) => currentItem
         ),
-        concatMap(() => from(addAlertHandler(iteration.tabId)))
+        //then there are a whole host of set up actions that need to be done
+        switchMap(
+            (currentItem) =>
+                zip(
+                    //we need to have a view of network events so we can collect stats etc
+                    from(enableNetworkEvents(currentItem.tabId)),
+                    //we need to have a view of page events for alert controls etc,
+                    from(enablePageEvents(currentItem.tabId)),
+                    //we need to have a view of performance events for metrics etc,
+                    from(enablePerformanceMetrics(currentItem.tabId)),
+                    //we need to have a view of service worker events for stop command etc,
+                    from(enableServiceWorkerEvents(currentItem.tabId)),
+                    //we need to set the network conditions
+                    from(
+                        setNetworkConditions(
+                            currentItem.tabId,
+                            currentItem.latency,
+                            currentItem.bandwidth_down,
+                            currentItem.bandwidth_up
+                        )
+                    ),
+                    //we need an alert handler so alert boxes do not stop the tests
+                    from(addAlertHandler(currentItem.tabId))
+                ),
+            (currentItem) => currentItem
+        )
     );
 };
 
@@ -162,44 +194,8 @@ const runJob = (payload) => {
             //then save the active job details to the globals for access anywhere, especially in the data collection observable
             tap((job) => (activeJob = job)),
             //then we run the debugger commands to get started
-            //use switchmap as we need to have the job to be able to pass the tab id to attach debugger etc
             switchMap(
-                (job) => from(attachDebugger(job.tabId)),
-                (job) => job
-            ),
-            //we need to have a view of network events so we can collect stats etc
-            switchMap(
-                (job) => from(enableNetworkEvents(job.tabId)),
-                (job) => job
-            ),
-            //we need to have a view of page events for alert controls etc,
-            switchMap(
-                (job) => from(enablePageEvents(job.tabId)),
-                (job) => job
-            ),
-            //we need to have a view of performance events for metrics etc,
-            switchMap(
-                (job) => from(enablePerformanceMetrics(job.tabId)),
-                (job) => job
-            ),
-            //we need to have a view of service worker events for stop command etc,
-            switchMap(
-                (job) => from(enableServiceWorkerEvents(job.tabId)),
-                (job) => job
-            ),
-            //we need to set the network conditions
-            switchMap(
-                (job) => from(setNetworkConditions(job.tabId, job.latency, job.bandwidth_down, job.bandwidth_up)),
-                (job) => job
-            ),
-            //we need an alert handler so alert boxes do not stop the tests
-            switchMap(
-                (job) => from(addAlertHandler(job.tabId)),
-                (job) => job
-            ),
-            //then we need to switch to the active tab to get accurate image loads
-            switchMap(
-                (job) => from(switchToTab(job.tabId)),
+                (job) => from(debuggerAttach$(job)),
                 (job) => job
             ),
             //so set up is now complete and we can now start to work each job url into a page, then each iteration of that page
@@ -210,6 +206,9 @@ const runJob = (payload) => {
                         url: url,
                         tabId: job.tabId,
                         pageIterations: job.pageIterations,
+                        latency: job.latency,
+                        bandwidth_down: job.bandwidth_down,
+                        bandwidth_up: job.bandwidth_up,
                         withCache: job.withCache,
                         withServiceWorker: job.withServiceWorker,
                         screenshotWidth: job.screenshotWidth,
@@ -240,7 +239,7 @@ const runJob = (payload) => {
         );
 };
 
-//OBSERVABLES FOR REPEATING PAGE IERATIONS
+//OBSERVABLES FOR REPEATING PAGE IERATIONS WITH PAUSING, USING MESSAGING OBSERVABLE FROM DATA COLLECTION
 
 const runSingleUrl$ = (page) => {
     return of(page).pipe(
@@ -315,7 +314,32 @@ const runIteration$ = (page) => {
                 new Iteration({
                     url: mappedPage.url,
                     tabId: mappedPage.tabId,
+                    latency: mappedPage.latency,
+                    bandwidth_down: mappedPage.bandwidth_down,
+                    bandwidth_up: mappedPage.bandwidth_up,
                 })
+        ),
+        //then we need to check that the debugger did not get detached
+        //this error occurs on https://www.usmagazine.com/
+        switchMap(
+            (iteration) => from(isDebuggerAttached(iteration.tabId)),
+            (iteration, attached) => {
+                //add the marker and return the iteration
+                iteration.attached = attached;
+                return iteration;
+            }
+        ),
+        //then we need to restart the debugger and set params
+        switchMap(
+            (iteration) =>
+                from(
+                    iteration.attached
+                        ? //if the debugger attached just resolve
+                          Promise.resolve()
+                        : //otherwise re-enable debugger
+                          from(debuggerAttach$(iteration))
+                ),
+            (iteration) => iteration
         ),
         //then we switchmap into an execution of the promises that clear the cache
         switchMap(
@@ -329,18 +353,6 @@ const runIteration$ = (page) => {
                 ),
             (iteration) => iteration
         ),
-        //then we do the same with service workers
-        switchMap(
-            (iteration) =>
-                from(
-                    page.withServiceWorker
-                        ? //if the user has chosen to have the cache active then just resolve
-                          Promise.resolve()
-                        : //otherwise this clears the cache each time we start an iteration
-                          Promise.all([stopAllServiceWorkers(iteration.tabId)])
-                ),
-            (iteration) => iteration
-        ),
         //then we switchMap into the actual execution of the commands, using combineLatest
         switchMap(
             (iteration) =>
@@ -349,8 +361,8 @@ const runIteration$ = (page) => {
                     masterDataObservable.pipe(tap((data) => console.log(data))),
                     //this opens the page and injects the DCL and complete down/up scroll actions into runtime, this will emit almost instantly
                     from(navigateAndScroll(iteration.tabId, iteration.url)),
-                    //this handles odd detachment of debugger on some pages
-                    debouncedDebugger$(iteration).pipe(startWith(false))
+                    //then switch to the active tab here
+                    from(switchToTab(iteration.tabId))
                 ),
             (
                 //with result selector function we take iteration and array from combineLatest
@@ -388,10 +400,11 @@ const runIteration$ = (page) => {
                     },
                     //then the placeholder for the output of the navigate and scroll
                     navigated,
+                    tab,
                 ]
             ) => {
                 console.log(
-                    `%cTest Suite: single iteration navigated: ${navigated}`,
+                    `%cTest Suite: single iteration navigated: ${navigated} on tab ${tab.id}`,
                     'color: darkred; font-size: normal;'
                 );
                 //CONVERT RAW DATA CLASS TO ITERATION CLASS
@@ -433,7 +446,7 @@ const runIteration$ = (page) => {
         ),
         //only take one before killing the stream and unsubscribing from all inputs into the combineLatest stream
         take(1),
-        //then this is where we kill the service worker if that's what's ordered
+        //then this is where we kill the service worker AFTER PAGE LOAD if that's what's ordered
         switchMap(
             (iteration) =>
                 from(
@@ -441,7 +454,7 @@ const runIteration$ = (page) => {
                         ? //if the user has chosen to keep service workers active then we just resolve
                           Promise.resolve()
                         : //otherwise this orders the examination of service workers and potentially stops them
-                          stopServiceWorker(iteration.tabId)
+                          unregisterServiceWorker(iteration.tabId)
                 ),
             (iteration) => iteration
         )
@@ -614,6 +627,15 @@ const attachDebugger = (tabID) => {
     });
 };
 
+const isDebuggerAttached = (tabID) => {
+    return new Promise((resolve) => {
+        chrome.debugger.getTargets((targetInfoArray) => {
+            const isAttached = targetInfoArray.some((target) => target.tabId === tabID && target.attached);
+            resolve(isAttached);
+        });
+    });
+};
+
 const detachDebugger = (tabID) => {
     return new Promise((resolve, reject) => {
         chrome.debugger.detach({ tabId: tabID }, function (response) {
@@ -745,23 +767,6 @@ const enableServiceWorkerEvents = (tabID) => {
                 return;
             }
             console.log(`Test Suite: Chrome Debugger ServiceWorker Domain Notifications Enabled`);
-            resolve(response);
-        });
-    });
-};
-
-const stopAllServiceWorkers = (tabID) => {
-    return new Promise((resolve, reject) => {
-        chrome.debugger.sendCommand({ tabId: tabID }, 'ServiceWorker.stopAllWorkers', {}, function (response) {
-            if (chrome.runtime.lastError) {
-                sendConsoleMessage(
-                    `Test Error: ServiceWorker stopAllWorkers Error: ${chrome.runtime.lastError.message}`
-                );
-                reject(chrome.runtime.lastError.message);
-                return;
-            }
-            console.log(`Test Suite: Chrome Debugger ServiceWorker stopAllWorkers completed`);
-            sendConsoleMessage('Service workers stopped');
             resolve(response);
         });
     });
@@ -966,7 +971,7 @@ const navigateAndScroll = (tabId, url) => {
 
 //UTILS
 
-const stopServiceWorker = (tabId) => {
+const unregisterServiceWorker = (tabId) => {
     return new Promise((resolve) => {
         chrome.tabs.sendMessage(tabId, { command: 'STOP_SERVICE_WORKER' }, (response) => {
             //handle any errors that might arise but do not let it stop the test

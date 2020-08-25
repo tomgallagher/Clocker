@@ -140,29 +140,6 @@ const debuggerEventObservable = fromEventPattern(
     //and this is shared amongst many subscribers
 ).pipe(share());
 
-//SOURCE OBSERVABLE - MESSAGE EVENTS
-
-//this handles the interactive and complete readystate change messages that come from the page and pass them into an observer
-
-const messagingObservable = fromEventPattern(
-    (handler) => {
-        const wrapper = (request, sender, sendResponse) => {
-            //note the async is set to true by default to allow for slow JSON responses in the createDataResultStream combineLatest
-            const options = { async: false, request, sender, sendResponse };
-            handler(options);
-            return options.async;
-        };
-        console.log(`Test Suite: SUBSCRIBED to SHARED Sync Messaging Observer Instance`);
-        chrome.runtime.onMessage.addListener(wrapper);
-        return wrapper;
-    },
-    (handler, wrapper) => {
-        console.log(`Test Suite: UNSUBSCRIBED from SHARED Sync Messaging Observer Instance`);
-        chrome.runtime.onMessage.removeListener(wrapper);
-    }
-    //and this is shared amongst many subscribers
-).pipe(share());
-
 /*
     The raw data observables need to be filtered and otherwise mutated before being combined    
 
@@ -271,6 +248,7 @@ const interactiveNavigationObservable = navigationEventObservable.pipe(
                 url: navObject.url,
                 timestamp: Date.now(),
                 signal: 'web navigation',
+                tabId: navObject.tabId,
             }
         );
         return streamlinedObject;
@@ -293,6 +271,7 @@ const completeNavigationObservable = navigationEventObservable.pipe(
                 url: navObject.url,
                 timestamp: Date.now(),
                 signal: 'web navigation',
+                tabId: navObject.tabId,
             }
         );
         return streamlinedObject;
@@ -309,7 +288,7 @@ const interactiveMessagingObservable = messagingObservable.pipe(
     //filter it for the DomContentLoaded events only
     filter((msgObject) => msgObject.request.command == 'onDOMContentLoaded'),
     //then map it to the request only, which is an object containing only the sent fields
-    map((msgObject) => msgObject.request),
+    map((msgObject) => ({ ...msgObject.request, tabId: msgObject.sender.tab.id })),
     //log the arrival of the DomContentLoaded event
     tap((msgObject) =>
         console.log(`Test Suite: Messaging ${msgObject.command} Observer Emits: ${JSON.stringify(msgObject)}`)
@@ -320,25 +299,12 @@ const completeMessagingObservable = messagingObservable.pipe(
     //filter it for the DomContentLoaded events only
     filter((msgObject) => msgObject.request.command == 'onCompleted'),
     //then map it to the request only, which is an object containing only the sent fields
-    map((msgObject) => msgObject.request),
+    map((msgObject) => ({ ...msgObject.request, tabId: msgObject.sender.tab.id })),
     //log the arrival of the window load event
     tap((msgObject) =>
         console.log(`Test Suite: Messaging ${msgObject.command} Observer Emits: ${JSON.stringify(msgObject)}`)
     )
 );
-
-//PAUSE RESUME OBSERVABLE RETURNS CURRENT STATE OF UI COMMAND
-
-const pauseResume$ = merge(
-    messagingObservable.pipe(
-        filter((msg) => msg.request.command == 'pauseTest' || msg.request.command == 'abortTest'),
-        mapTo(false)
-    ),
-    messagingObservable.pipe(
-        filter((msg) => msg.request.command == 'resumeTest'),
-        mapTo(true)
-    )
-).pipe(startWith(true), shareReplay(1));
 
 //FILTERED OBSERVABLES = DEBUGGER EVENTS
 
@@ -386,6 +352,62 @@ const resourceTimingObservable = debuggerEventObservable.pipe(
     })
 );
 
+const performanceMetricsObservable$ = (reqObj) => {
+    //we need to start collecting the performance metrics on the page complete event
+    return completeObservable.pipe(
+        filter(
+            (obj) =>
+                new URL(obj.url).origin === new URL(reqObj.url).origin &&
+                //we only want events that happen after the start signalled by the onBeforeRequest
+                obj.timestamp > reqObj.timestamp
+        ),
+        //add some seconds to allow post-window.load advertising and lazy loaded images to load or be blocked - this does not affect the timestamps, just test running
+        delay(activeJob ? activeJob.asset_wait_interval : 5000),
+        //then once we are due to start collecting, we need to check that the debugger is attached
+        //sites for testing this https://www.usmagazine.com/, https://www.westernjournal.com/
+        switchMap(
+            (reqObj) => from(isDebuggerAttached(reqObj.tabId)),
+            (reqObj, attached) => {
+                reqObj.attached = attached;
+                return reqObj;
+            }
+        ),
+        //then we need to resolve with different things depending on whether the debugger is attached
+        //we cannot collect performance metrics if the debugger has become detached
+        switchMap(
+            (reqObj) =>
+                from(
+                    reqObj.attached
+                        ? //if the debugger attached return performance metrics
+                          from(getPerformanceMetrics(reqObj.tabId))
+                        : //otherwise return the dummy
+                          Promise.resolve({ metrics: [] })
+                ),
+            (reqObj, metricsOutput) => {
+                //first we report if we have collected the metrics
+                reqObj.attached
+                    ? sendConsoleMessage('Performance metrics collected')
+                    : sendConsoleMessage('Unable to collect performance metrics');
+                //then we create the metrics array
+                const metricsMap = metricsOutput.metrics.length
+                    ? //if there are entries in the metrics array then we need to pass them into the map
+                      new Map(metricsOutput.metrics.map((i) => [i.name, i.value]))
+                    : //otherwise we use our defaults
+                      new Map([
+                          ['Documents', 0],
+                          ['Resources', 0],
+                          ['Frames', 0],
+                          ['AdSubframes', 0],
+                          ['JSHeapUsedSize', 0],
+                          ['JSHeapTotalSize', 0],
+                      ]);
+
+                return metricsMap;
+            }
+        )
+    );
+};
+
 /*
     The filtered raw data observables need to be combined in order to produce our raw data object    
 
@@ -414,7 +436,9 @@ const completeObservable = merge(completeNavigationObservable, completeMessaging
         sendConsoleMessage(
             `Page complete signal from ${obj.signal} at <a target="_blank" href="${obj.url}">${obj.url}</a>`
         )
-    )
+    ),
+    //and this is shared with the between combined emissions and the metrics observable
+    share()
 );
 
 //COMBINE THE TWO DATA USAGE OBSERVABLES FOR A COMPLETE PICTURE
@@ -449,15 +473,7 @@ const combinedEmissions$ = (requestObj) => {
                             obj.timestamp > reqObj.timestamp
                     ),
                     //add some seconds to allow post-window.load advertising and lazy loaded images to load or be blocked - this does not affect the timestamps, just test running
-                    delay(activeJob ? activeJob.asset_wait_interval : 5000),
-                    //then add the metrics array to the object
-                    switchMap(
-                        () => from(getPerformanceMetrics(reqObj.tabId)),
-                        (obj, metricsObject) => {
-                            obj.metrics = new Map(metricsObject.metrics.map((i) => [i.name, i.value]));
-                            return obj;
-                        }
-                    )
+                    delay(activeJob ? activeJob.asset_wait_interval : 5000)
                 ),
                 //make sure we know when errors happen - when resources are blocked, or otherwise fail to load
                 onWebRequestErrorObservable.pipe(
@@ -501,7 +517,8 @@ const combinedEmissions$ = (requestObj) => {
                         return headersTimingArray;
                         //seed with the initial array
                     }, [])
-                )
+                ),
+                performanceMetricsObservable$(reqObj)
             )
         )
         //tap((x) => console.log(x))
@@ -518,7 +535,15 @@ const masterDataObservable = streamlinedOnBeforeRequest.pipe(
             //we take the initial onBefore request in the result selector function
             onBeforeRequest,
             //we deconstruct the zip array with variable names so we can work the data
-            [onInteractive, onComplete, onErrorArray, dataUsageLookupObject, typeLookupObject, headersTimingArray]
+            [
+                onInteractive,
+                onComplete,
+                onErrorArray,
+                dataUsageLookupObject,
+                typeLookupObject,
+                headersTimingArray,
+                perfMetrics,
+            ]
         ) => {
             console.log(
                 `%cTest Suite: TIMING OBJECT EMITTED for ${onBeforeRequest.url}`,
@@ -543,7 +568,7 @@ const masterDataObservable = streamlinedOnBeforeRequest.pipe(
                 errorArray: onErrorArray.filter((error) => error.type !== 'dummyError'),
                 errorCount: onErrorArray.filter((error) => error.type !== 'dummyError').length,
                 //keeping track of metrics
-                metrics: onComplete.metrics,
+                metrics: perfMetrics,
             });
             //then we need to do some work to divide everything in the data usage lookup object according to resource type
             //loop through and allocate to arrays

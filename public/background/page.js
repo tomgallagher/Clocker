@@ -8,6 +8,9 @@ class Page {
             //then we need to carry some data forward from the job
             tabId: 0,
             pageIterations: 1,
+            latency: 0,
+            bandwidth_down: 0,
+            bandwidth_up: 0,
             withCache: false,
             withServiceWorker: true,
             screenshotWidth: 600,

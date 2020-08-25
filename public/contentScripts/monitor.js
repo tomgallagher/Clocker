@@ -39,9 +39,7 @@ chrome.runtime.onMessage.addListener((request, _, sendResponse) => {
                     if (index === registrations.length - 1) {
                         scopes.length > 1
                             ? sendResponse({
-                                  message: `Service workers with scopes <a>${registration.scopes.join(
-                                      ','
-                                  )}</a> disabled`,
+                                  message: `Service workers with scopes <a>${scopes.join(',')}</a> disabled`,
                               })
                             : sendResponse({ message: `Service worker with scope <a>${scopes[0]}</a> disabled` });
                     }
