@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { Segment, Header, Grid, Image, Button, Divider, Message } from 'semantic-ui-react';
 import { useHistory } from 'react-router-dom';
-import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import { useStores } from './../../hooks/useStores';
-import { SendChromeMessage } from './../../utils/chromeFunctions';
 import Chromium from './../../images/chromium.webp';
 
 export const Banner = observer(() => {
@@ -29,13 +27,8 @@ export const Banner = observer(() => {
                 historyLayouts,
                 ...partialSettings
             } = Settings;
-            //then create the job
+            //then create the job, which then sends a message to background.js that starts the process
             JobStore.createJob({ settings: partialSettings });
-            //then send the message to background
-            SendChromeMessage({
-                command: 'startTest',
-                payload: toJS(JobStore.jobs[JobStore.activeIndex]),
-            });
             //then move to the results page
             history.push('/results');
         } else {

@@ -11,5 +11,8 @@
             "runIn": "terminal",
             "command": "npm run build",
         }
-    ]
+    ],
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": true
 }

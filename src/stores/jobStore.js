@@ -1,18 +1,17 @@
-import { observable, autorun, reaction, decorate, computed } from 'mobx';
+import { observable, autorun, reaction, decorate, computed, toJS } from 'mobx';
+import localdb from './../database/database';
+import { SendChromeMessage } from './../utils/chromeFunctions';
 import { createMobxMessageListener } from './../utils/mobxFunctions';
 import { v4 as uuidv4 } from 'uuid';
 import { RoundedAverage, RoundedAverageMegaBytes, TotalMegaBytes } from './../utils/arrayFunctions';
 import { BrowserDetect } from '../utils/browserDetect';
 import ColorPalette from './../components/charts/colorPalette.json';
 
-//for testing purposes
-//import { makeData } from './../__test__/makeData';
-
 export class JobStore {
     constructor() {
-        //we have the basic attributes of the job store
+        //we have the array of jobs in the job store
         this.jobs = [];
-        //we have the activeIndex for jobs currently running
+        //we have the activeIndex for jobs currently running / most recent job
         this.activeIndex = 0;
         //we have the display index for past jobs that need to be displayed
         this.displayIndex = null;
@@ -24,7 +23,7 @@ export class JobStore {
         //then the loading indicators for when we get the data from the database
         this.isLoading = false;
         this.isLoadError = false;
-        //more complex observable to link the rxjs messaging port from chrome into mobx store
+        //more complex observables to link the rxjs messaging port from chrome into mobx store
         //pass command filter, request property to return and default value
         this.console = createMobxMessageListener({
             commandFilter: 'incomingConsoleMessage',
@@ -37,9 +36,9 @@ export class JobStore {
             initialState: null,
         });
 
-        //then we use the more complex observables in autorun
+        //then we use autorun to monitor incoming console messages and then update the UI accordingly
         autorun(() => {
-            //no need to activate on the first default value
+            //no need to activate on null value
             if (this.console.current()) {
                 //then see if we have an active job or placeholder
                 const activeJob = this.jobs.length ? this.jobs[this.activeIndex] : this.placeholderJob;
@@ -48,6 +47,7 @@ export class JobStore {
             }
         });
 
+        //same with page data coming in - a new page needs to be added to the active job
         autorun(() => {
             //no need to activate on null value
             if (this.pageEntries.current()) {
@@ -60,6 +60,7 @@ export class JobStore {
             }
         });
 
+        //then we are always looking at the jobs length to see if we have a new job and update the active index accordingly
         reaction(
             () => this.jobs.length,
             () => {
@@ -67,6 +68,8 @@ export class JobStore {
                 this.activeIndex = this.jobs.length - 1;
             }
         );
+
+        //then we need to load the existing jobs in local storage from the database
     }
 
     createJob = (job) => {
@@ -76,11 +79,31 @@ export class JobStore {
             operatingSystem: this.browser.os,
             operatingSystemVersion: this.browser.os_version,
         });
-        //on button click in banner.js front page we need to create a new job and push it into the jobs array
+        //on button click in banner.js front page we need to create a new job, with the browser details as options
         const newJob = new Job(browserJob);
-        this.jobs.push(newJob);
-
-        //it also needs to be saved into db at this point
+        //then create a saveable version of the job
+        const saveableJob = toJS(newJob);
+        //then save the job to storage in order to get the db id attached to the observed job
+        localdb
+            .table('jobs')
+            .add(saveableJob)
+            .then((id) => {
+                //the id is the only thing that comes back
+                newJob.database_id = id;
+                //then push the job into our local observable jobs list, which will update the active index
+                this.jobs.push(newJob);
+                //then report the id of the project
+                console.log(`Storage has created local version of Job with ID: ${newJob.database_id}`);
+                //then send the job to the background page for processing
+                SendChromeMessage({
+                    command: 'startTest',
+                    payload: toJS(newJob),
+                });
+            })
+            .catch((error) => {
+                console.log(error);
+                console.log(newJob);
+            });
     };
 
     resetListeners = () => {
@@ -225,13 +248,17 @@ export class Job {
                 this.scriptLoadTotal = this.pages.map((item) => item.scriptLoadAverage).reduce(TotalMegaBytes, 0);
                 //and update the date
                 this.updatedAt = Date.now();
+                //and then update in the database at this point
+                localdb
+                    .table('jobs')
+                    //do the update command with the id and the saveable version of the observed project
+                    .update(this.database_id, toJS(this))
+                    .then(() => {
+                        console.log(`Storage has updated version of Job with ID ${this.database_id}`);
+                    })
+                    .catch((error) => console.error(error));
             }
         );
-
-        //then for testing purposes we need to add some fake data
-        //const testData = makeData(20);
-        //const testPages = testData.map((page) => new Page(page));
-        //this.pages = [...this.pages, ...testPages];
     }
 
     get pageTableData() {
