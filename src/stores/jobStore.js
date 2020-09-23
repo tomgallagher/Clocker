@@ -1,4 +1,4 @@
-import { observable, autorun, reaction, decorate, computed, toJS } from 'mobx';
+import { observable, autorun, reaction, decorate, computed, toJS, runInAction } from 'mobx';
 import localdb from './../database/database';
 import { SendChromeMessage } from './../utils/chromeFunctions';
 import { createMobxMessageListener } from './../utils/mobxFunctions';
@@ -70,7 +70,37 @@ export class JobStore {
         );
 
         //then we need to load the existing jobs in local storage from the database
+        this.loadJobsFromStorage();
     }
+
+    //load guidelines from local storage
+    loadJobsFromStorage = () => {
+        //mark the loading process as started
+        this.isLoading = true;
+        //open the correct table
+        localdb
+            .table('jobs')
+            //then get the whole collection as an array
+            .toArray()
+            //then once we have the array we need to create all the jobs
+            .then((jobs) => {
+                //then we just need to push each job into the observable list
+                jobs.forEach((job) => {
+                    //this is a bit more complex as we need to create an observable from the plain JS object that is stored
+                    const observableJob = new Job(job);
+                    //then push to observable list
+                    runInAction(() => this.jobs.push(observableJob));
+                });
+                //then say we have finished loading
+                this.isLoading = false;
+                //then report
+                console.log(`Loaded ${jobs.length} jobs from storage`);
+            })
+            .catch((error) => {
+                console.error(error);
+                this.isLoadError = true;
+            });
+    };
 
     createJob = (job) => {
         //add the browser details to the job
@@ -218,7 +248,8 @@ export class Job {
             this[prop] = opts[prop];
         });
 
-        //then when a page gets added we recalc the averages
+        //then when a page gets added we recalc the averages and save to the database
+        //using reaction here rather than autosave as we only care about a couple of properties
         reaction(
             () => this.pages.length,
             () => {
@@ -257,10 +288,28 @@ export class Job {
                     //do the update command with the id and the saveable version of the observed project
                     .update(this.database_id, toJS(this))
                     .then(() => {
-                        console.log(`Storage has updated version of Job with ID ${this.database_id}`);
+                        console.log(`Storage has updated on NEW PAGE of Job with ID ${this.database_id}`);
                     })
                     .catch((error) => console.error(error));
             }
+        );
+
+        //then we also want to make changes to the saved job when the name gets changed
+        reaction(
+            () => this.name,
+            () => {
+                //and then update in the database at this point
+                localdb
+                    .table('jobs')
+                    //do the update command with the id and the saveable version of the observed project
+                    .update(this.database_id, toJS(this))
+                    .then(() => {
+                        console.log(`Storage has updated on NAME CHANGE of Job with ID ${this.database_id}`);
+                    })
+                    .catch((error) => console.error(error));
+            },
+            //and we need to have a delay so we can update after the typing has finished
+            { delay: 5000 }
         );
     }
 
@@ -275,7 +324,7 @@ export class Job {
 
     get pageMetricsTableData() {
         return this.pages.map((page) => {
-            //then we return the partial data for the metrics chart
+            //then we return the partial data for the metrics table
             return {
                 url: page.url,
                 metricsDocumentsAverage: page.minorResources.metricsDocumentsAverage,
