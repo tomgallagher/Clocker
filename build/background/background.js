@@ -2,6 +2,9 @@ const { of, from, fromEventPattern, merge, zip, combineLatest } = rxjs;
 const {
     map,
     switchMap,
+    scan,
+    flatMap,
+    delay,
     concatMap,
     tap,
     filter,
@@ -52,7 +55,7 @@ chrome.runtime.onMessage.addListener((request) => {
                     //then we close the test tab
                     .then(() => closeTestTab(activeJob.tabId))
                     //then we send the message
-                    .then(() => sendConsoleMessage(`Aborted Test Job: ${activeJob.id}`))
+                    .then(() => sendConsoleMessage(`Aborted Test Job: ${activeJob.unique_id}`))
                     //then finally we reset the job
                     .then(() => {
                         activeJob = null;
@@ -113,7 +116,9 @@ chrome.debugger.onDetach.addListener((source, reason) => {
         //then we close the test tab
         closeTestTab(source.tabId)
             //then we send the message
-            .then(() => sendConsoleMessage(`Aborted Test Job: ${activeJob.id} as debugger detached when ${reason}`))
+            .then(() =>
+                sendConsoleMessage(`Aborted Test Job: ${activeJob.unique_id} as debugger detached when ${reason}`)
+            )
             //then finally we reset the job
             .then(() => {
                 activeJob = null;
@@ -170,7 +175,7 @@ const debuggerAttach$ = (incomingJobOrIteration) => {
 
 const runJob = (payload) => {
     //report start to user console
-    sendConsoleMessage(`Started test job with ID: ${payload.id}`);
+    sendConsoleMessage(`Started test job with ID: ${payload.unique_id}`);
     //so we attach the active job description to the processing of the incoming payload
     activeJobSubscription = of(payload)
         .pipe(
@@ -217,7 +222,9 @@ const runJob = (payload) => {
         .subscribe(
             (res) => console.log(res),
             (err) => {
-                sendConsoleMessage(`Cannot complete test job with ID: ${payload.id}: unrecoverable error: ${err}`);
+                sendConsoleMessage(
+                    `Cannot complete test job with ID: ${payload.unique_id}: unrecoverable error: ${err}`
+                );
             },
             () => {
                 //then we detach the debugger
@@ -225,7 +232,7 @@ const runJob = (payload) => {
                     //then we close the test tab
                     .then(() => closeTestTab(activeJob.tabId))
                     //then we send the message
-                    .then(() => sendConsoleMessage(`Completed Test Job: ${activeJob.id}`))
+                    .then(() => sendConsoleMessage(`Completed Test Job: ${activeJob.unique_id}`))
                     //then finally we reset the job
                     .then(() => {
                         activeJob = null;

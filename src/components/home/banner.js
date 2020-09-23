@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Segment, Header, Grid, Image, Button, Divider, Message } from 'semantic-ui-react';
 import { useHistory } from 'react-router-dom';
+import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import { useStores } from './../../hooks/useStores';
 import Chromium from './../../images/chromium.webp';
@@ -15,6 +16,7 @@ export const Banner = observer(() => {
             //remove the warning, if present
             setShowMessage(false);
             //get the settings info we care about as partial
+            //we freeze the settings as a JS object so we can save it into local storage
             const {
                 pageDisplayIndex,
                 customUrlLists,
@@ -26,7 +28,7 @@ export const Banner = observer(() => {
                 resultsLayouts,
                 historyLayouts,
                 ...partialSettings
-            } = Settings;
+            } = toJS(Settings);
             //then create the job, which then sends a message to background.js that starts the process
             JobStore.createJob({ settings: partialSettings });
             //then move to the results page

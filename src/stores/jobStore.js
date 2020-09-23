@@ -102,7 +102,7 @@ export class JobStore {
             })
             .catch((error) => {
                 console.log(error);
-                console.log(newJob);
+                console.log(saveableJob);
             });
     };
 
@@ -170,12 +170,15 @@ export class Job {
             browserName: 'N/A',
             operatingSystem: 'N/A',
             operatingSystemVersion: 'N/A',
-            id: uuidv4(),
+            unique_id: uuidv4(),
             database_id: 0,
             createdAt: Date.now(),
             updatedtAt: Date.now(),
+            //when the job is created the settings at the time are frozen and copied in
             settings: {},
+            //record of all console messages
             consoleMessages: [],
+            //container for pages
             pages: [],
             //the job must contain reporting stats on its contained pages, the AVERAGE for the important indicators across all ITERATIONS
             dclAverage: 0,
@@ -367,7 +370,6 @@ export class Page {
         //always use the default settings, important that these remain in same order as table headers for csv download
         var defaults = {
             url: 'N/A',
-            jobId: 'N/A',
             id: uuidv4(),
             createdAt: Date.now(),
             //and we can save screenshot of page
