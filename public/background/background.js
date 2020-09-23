@@ -1,13 +1,10 @@
-const { of, from, fromEventPattern, merge, zip, combineLatest, defer } = rxjs;
+const { of, from, fromEventPattern, merge, zip, combineLatest } = rxjs;
 const {
     map,
     switchMap,
     concatMap,
-    flatMap,
     tap,
     filter,
-    scan,
-    delay,
     startWith,
     repeat,
     share,
@@ -15,7 +12,6 @@ const {
     toArray,
     mapTo,
     shareReplay,
-    catchError,
 } = rxjs.operators;
 
 //we need the active job and the active job observable subscription in global scope
@@ -96,11 +92,11 @@ const messagingObservable = fromEventPattern(
 
 const pauseResume$ = merge(
     messagingObservable.pipe(
-        filter((msg) => msg.request.command == 'pauseTest' || msg.request.command == 'abortTest'),
+        filter((msg) => msg.request.command === 'pauseTest' || msg.request.command === 'abortTest'),
         mapTo(false)
     ),
     messagingObservable.pipe(
-        filter((msg) => msg.request.command == 'resumeTest'),
+        filter((msg) => msg.request.command === 'resumeTest'),
         mapTo(true)
     )
 ).pipe(startWith(true), shareReplay(1));
