@@ -4,12 +4,12 @@
         {
             "match": ".*\\.css$",
             "runIn": "terminal",
-            "command": "cd browsertester && npm run build",
+            "command": "npm run build",
         },
         {
             "match": ".*\\.js$",
             "runIn": "terminal",
-            "command": "cd browsertester && npm run build",
+            "command": "npm run build",
         }
     ]
 }
