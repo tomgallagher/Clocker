@@ -21,6 +21,8 @@ export const EditableDisplayNameTableCell = observer(({ row }) => {
             onClick={(event) => event.stopPropagation()}
             //we need to handle the change
             onChange={handleOnChange}
+            //unobstrusive border style
+            style={{ border: '1px solid rgba(34,36,38,.15)' }}
         />
     );
 });
