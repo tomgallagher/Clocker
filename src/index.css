@@ -75,6 +75,16 @@
     justify-content: space-between;
     height: 100%;
 }
+/* then we want to space out the rows evenly and add some padding for elements with width:100%*/
+.internal-grid-content-columns {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    height: 100%;
+    padding-left: 10px;
+    padding-right: 10px;
+    overflow: hidden;
+}
 .ui.progress.success .bar {
     background-color: #058825 !important;
 }

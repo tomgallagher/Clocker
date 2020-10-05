@@ -313,6 +313,58 @@ export class Job {
         );
     }
 
+    get standardStats() {
+        return {
+            dclDataUsage: this.pages.map(({ dclAverage, dataUsageAverage }) => [dclAverage, dataUsageAverage]),
+            dclHeaderTiming: this.pages.map(({ dclAverage, headerTimingsAverage }) => [
+                dclAverage,
+                headerTimingsAverage,
+            ]),
+            dclRequests: this.pages.map(
+                ({
+                    dclAverage,
+                    cssRequestsAverage,
+                    fontRequestsAverage,
+                    scriptRequestsAverage,
+                    imageRequestsAverage,
+                    mediaRequestsAverage,
+                }) => [
+                    dclAverage,
+                    cssRequestsAverage +
+                        fontRequestsAverage +
+                        scriptRequestsAverage +
+                        imageRequestsAverage +
+                        mediaRequestsAverage,
+                ]
+            ),
+            completeDataUsage: this.pages.map(({ completeAverage, dataUsageAverage }) => [
+                completeAverage,
+                dataUsageAverage,
+            ]),
+            completeHeaderTiming: this.pages.map(({ completeAverage, headerTimingsAverage }) => [
+                completeAverage,
+                headerTimingsAverage,
+            ]),
+            completeDclRequests: this.pages.map(
+                ({
+                    completeAverage,
+                    cssRequestsAverage,
+                    fontRequestsAverage,
+                    scriptRequestsAverage,
+                    imageRequestsAverage,
+                    mediaRequestsAverage,
+                }) => [
+                    completeAverage,
+                    cssRequestsAverage +
+                        fontRequestsAverage +
+                        scriptRequestsAverage +
+                        imageRequestsAverage +
+                        mediaRequestsAverage,
+                ]
+            ),
+        };
+    }
+
     get pageTableData() {
         return this.pages.map((page) => {
             //we have no need for the following fields in the table data, and it causes problems in the CSV download, so we destructure to remove
@@ -412,6 +464,7 @@ decorate(Job, {
     pageTableData: computed,
     pageMetricsTableData: computed,
     resourceLoadData: computed,
+    standardStats: computed,
 });
 
 export class Page {

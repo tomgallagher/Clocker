@@ -16,6 +16,7 @@ import { Timings } from './../components/results/timings';
 import { LoadChart } from '../components/charts/loadChart';
 import { RequestChart } from '../components/charts/requestChart';
 import { ActionButtons } from '../components/results/actionButtons';
+import { Statistics } from '../components/results/statistics';
 
 // <ResponsiveReactGridLayout> takes width to calculate positions on drag events.
 // WidthProvider can be used to automatically determine width upon initialization and window resize events.
@@ -104,6 +105,11 @@ export const Results = () => {
                     <div key='requestChart'>
                         <GridItem header='Average Resource Requests'>
                             <RequestChart />
+                        </GridItem>
+                    </div>
+                    <div key='statistics'>
+                        <GridItem header='Statistics'>
+                            <Statistics />
                         </GridItem>
                     </div>
                 </ResponsiveGridLayout>

@@ -29,6 +29,7 @@
     "rxjs": "^6.6.0",
     "semantic-ui-css": "^2.4.1",
     "semantic-ui-react": "^1.0.0",
+    "simple-statistics": "^7.3.0",
     "uuid": "^8.3.0"
   },
   "scripts": {

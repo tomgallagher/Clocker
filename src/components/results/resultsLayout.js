@@ -10,6 +10,7 @@ export const DefaultResultsLayouts = {
         { i: 'metricsTable', w: 9, h: 6, x: 0, y: 7, isBounded: true },
         { i: 'loadChart', w: 5, h: 3, x: 7, y: 7, isBounded: true },
         { i: 'requestChart', w: 5, h: 3, x: 7, y: 10, isBounded: true },
+        { i: 'statistics', w: 12, h: 3, x: 0, y: 13, isBounded: true },
     ],
     // 10 columns
     md: [
@@ -22,6 +23,7 @@ export const DefaultResultsLayouts = {
         { w: 10, h: 5, x: 0, y: 12, i: 'metricsTable', isBounded: true },
         { w: 5, h: 3, x: 0, y: 9, i: 'loadChart', isBounded: true },
         { w: 5, h: 3, x: 5, y: 9, i: 'requestChart', isBounded: true },
+        { w: 10, h: 5, x: 0, y: 17, i: 'statistics', isBounded: true },
     ],
     // 6 columns
     sm: [
@@ -34,6 +36,7 @@ export const DefaultResultsLayouts = {
         { w: 6, h: 5, x: 0, y: 11, i: 'metricsTable', isBounded: true },
         { w: 3, h: 2, x: 0, y: 9, i: 'loadChart', isBounded: true },
         { w: 3, h: 2, x: 3, y: 9, i: 'requestChart', isBounded: true },
+        { w: 6, h: 5, x: 0, y: 16, i: 'statistics', isBounded: true },
     ],
     // 4 columns
     xs: [
@@ -46,6 +49,7 @@ export const DefaultResultsLayouts = {
         { w: 4, h: 5, x: 0, y: 12, i: 'metricsTable', isBounded: true },
         { w: 4, h: 3, x: 0, y: 17, i: 'loadChart', isBounded: true },
         { w: 4, h: 3, x: 0, y: 20, i: 'requestChart', isBounded: true },
+        { w: 4, h: 5, x: 0, y: 23, i: 'statistics', isBounded: true },
     ],
     // 2 columns
     xxs: [
@@ -58,5 +62,6 @@ export const DefaultResultsLayouts = {
         { w: 2, h: 6, x: 0, y: 19, i: 'metricsTable', isBounded: true },
         { w: 2, h: 3, x: 0, y: 13, i: 'loadChart', isBounded: true },
         { w: 2, h: 3, x: 0, y: 16, i: 'requestChart', isBounded: true },
+        { w: 2, h: 6, x: 0, y: 25, i: 'statistics', isBounded: true },
     ],
 };
