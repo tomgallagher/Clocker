@@ -48,11 +48,11 @@ export const DisplayMetricsTable = observer(() => {
                     sortable={true}
                     selectable={true}
                     rowClick={handleRowClick}
-                    mostRecent={true}
+                    mostRecent={false}
                     filename={`${Settings.toString}_${Browser.name}_${Browser.os}${Browser.os_version}`}
                 />
             ) : (
-                <PlaceHolder iconName='arrow up' message='Click on job results to show page data' />
+                <PlaceHolder iconName='arrow up' message='Click on job results to show page metrics table' />
             )}
         </div>
     );

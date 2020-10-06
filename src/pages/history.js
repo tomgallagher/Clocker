@@ -8,6 +8,7 @@ import { GridItem } from './../components/gridItem';
 import { JobsTable } from '../components/history/jobsTable';
 import { DisplayPageTable } from '../components/history/displayPageTable';
 import { DisplayMetricsTable } from '../components/history/displayMetricsTable';
+import { DisplayStatistics } from '../components/history/displayStatistics';
 import { HistoryTitle } from '../components/history/historyTitle';
 
 // <ResponsiveReactGridLayout> takes width to calculate positions on drag events.
@@ -59,6 +60,11 @@ export const History = () => {
                     <div key='metricsTable'>
                         <GridItem header='Page Metrics'>
                             <DisplayMetricsTable />
+                        </GridItem>
+                    </div>
+                    <div key='statistics'>
+                        <GridItem header='Page Statistics'>
+                            <DisplayStatistics />
                         </GridItem>
                     </div>
                 </ResponsiveGridLayout>

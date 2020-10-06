@@ -11,8 +11,12 @@ export const DisplayPageTable = observer(() => {
     const { JobStore, Settings } = useStores();
     //get the activeJob, if not null, MUST CHECK NOT NULL AS ZERO INDEX POSSIBLE, otherwise the placeholder will do fine
     const displayJob = JobStore.displayIndex !== null ? JobStore.jobs[JobStore.displayIndex] : JobStore.placeholderJob;
+    //then get the data which is a computed function
+    const { pageTableData } = displayJob;
     //get the browser details for the csv file name
     const { Browser } = useBrowser();
+
+    console.log(displayJob);
 
     //then we have the custom row click
     const handleRowClick = (row) => {
@@ -50,17 +54,17 @@ export const DisplayPageTable = observer(() => {
             {JobStore.displayIndex !== null ? (
                 <SemanticTable
                     headers={columns}
-                    dataset={displayJob.pageTableData}
+                    dataset={pageTableData}
                     striped={true}
                     compact={true}
                     sortable={true}
                     selectable={true}
                     rowClick={handleRowClick}
-                    mostRecent={true}
+                    mostRecent={false}
                     filename={`${Settings.toString}_${Browser.name}_${Browser.os}${Browser.os_version}`}
                 />
             ) : (
-                <PlaceHolder iconName='arrow up' message='Click on job results to show page data' />
+                <PlaceHolder iconName='arrow up' message='Click on job results to show page table' />
             )}
         </div>
     );
