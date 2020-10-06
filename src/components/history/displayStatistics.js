@@ -89,7 +89,7 @@ export const DisplayStatistics = observer(() => {
                     </Grid.Column>
                 </Grid>
             ) : (
-                <PlaceHolder iconName='arrow up' message='Click on job results to show page statistics' />
+                <PlaceHolder iconName='arrow up' message='Click on job results to show job statistics' />
             )}
         </div>
     );

@@ -63,7 +63,7 @@ export const History = () => {
                         </GridItem>
                     </div>
                     <div key='statistics'>
-                        <GridItem header='Page Statistics'>
+                        <GridItem header='Job Statistics'>
                             <DisplayStatistics />
                         </GridItem>
                     </div>
