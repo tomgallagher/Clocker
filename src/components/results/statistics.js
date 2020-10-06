@@ -1,5 +1,5 @@
 import React from 'react';
-import { Header, Card } from 'semantic-ui-react';
+import { Grid, Header, Card } from 'semantic-ui-react';
 import { useStores } from '../../hooks/useStores';
 import { observer } from 'mobx-react';
 import { linearRegression, linearRegressionLine, rSquared } from 'simple-statistics';
@@ -13,74 +13,76 @@ export const Statistics = observer(() => {
     const activeJob = JobStore.jobs.length ? JobStore.jobs[JobStore.activeIndex] : JobStore.placeholderJob;
     return (
         <div className='internal-grid-content-columns'>
-            <div style={{ width: '33%', textAlign: 'center' }}>
-                <Header>Dom Content Loaded Regressions</Header>
-                <Card.Group centered>
-                    <StatisticsCard
-                        title='Data Usage'
-                        slope={linearRegression(activeJob.standardStats.dclDataUsage).m}
-                        intersect={linearRegression(activeJob.standardStats.dclDataUsage).b}
-                        rsquared={rSquared(
-                            activeJob.standardStats.dclDataUsage,
-                            linearRegressionLine(linearRegression(activeJob.standardStats.dclDataUsage))
-                        )}
-                    />
-                    <StatisticsCard
-                        title='Header Timings'
-                        slope={linearRegression(activeJob.standardStats.dclHeaderTiming).m}
-                        intersect={linearRegression(activeJob.standardStats.dclHeaderTiming).b}
-                        rsquared={rSquared(
-                            activeJob.standardStats.dclHeaderTiming,
-                            linearRegressionLine(linearRegression(activeJob.standardStats.dclHeaderTiming))
-                        )}
-                    />
-                    <StatisticsCard
-                        title='Total Requests'
-                        slope={linearRegression(activeJob.standardStats.dclRequests).m}
-                        intersect={linearRegression(activeJob.standardStats.dclRequests).b}
-                        rsquared={rSquared(
-                            activeJob.standardStats.dclRequests,
-                            linearRegressionLine(linearRegression(activeJob.standardStats.dclRequests))
-                        )}
-                    />
-                </Card.Group>
-            </div>
-            <div style={{ width: '33%', textAlign: 'center' }}>
-                <Header>Page Complete Regressions</Header>
-                <Card.Group centered>
-                    <StatisticsCard
-                        title='Data Usage'
-                        slope={linearRegression(activeJob.standardStats.completeDataUsage).m}
-                        intersect={linearRegression(activeJob.standardStats.completeDataUsage).b}
-                        rsquared={rSquared(
-                            activeJob.standardStats.completeDataUsage,
-                            linearRegressionLine(linearRegression(activeJob.standardStats.completeDataUsage))
-                        )}
-                    />
-                    <StatisticsCard
-                        title='Header Timings'
-                        slope={linearRegression(activeJob.standardStats.completeHeaderTiming).m}
-                        intersect={linearRegression(activeJob.standardStats.completeHeaderTiming).b}
-                        rsquared={rSquared(
-                            activeJob.standardStats.completeHeaderTiming,
-                            linearRegressionLine(linearRegression(activeJob.standardStats.completeHeaderTiming))
-                        )}
-                    />
-                    <StatisticsCard
-                        title='Total Requests'
-                        slope={linearRegression(activeJob.standardStats.completeDclRequests).m}
-                        intersect={linearRegression(activeJob.standardStats.completeDclRequests).b}
-                        rsquared={rSquared(
-                            activeJob.standardStats.completeDclRequests,
-                            linearRegressionLine(linearRegression(activeJob.standardStats.completeDclRequests))
-                        )}
-                    />
-                </Card.Group>
-            </div>
-            <div style={{ width: '33%', textAlign: 'center' }}>
-                <Header>Statistics Tool</Header>
-                <StatisticsTool />
-            </div>
+            <Grid doubling stackable textAlign='center' columns={3}>
+                <Grid.Column>
+                    <Header>Dom Content Loaded Regressions</Header>
+                    <Card.Group centered>
+                        <StatisticsCard
+                            title='Data Usage'
+                            slope={linearRegression(activeJob.standardStats.dclDataUsage).m}
+                            intersect={linearRegression(activeJob.standardStats.dclDataUsage).b}
+                            rsquared={rSquared(
+                                activeJob.standardStats.dclDataUsage,
+                                linearRegressionLine(linearRegression(activeJob.standardStats.dclDataUsage))
+                            )}
+                        />
+                        <StatisticsCard
+                            title='Header Timings'
+                            slope={linearRegression(activeJob.standardStats.dclHeaderTiming).m}
+                            intersect={linearRegression(activeJob.standardStats.dclHeaderTiming).b}
+                            rsquared={rSquared(
+                                activeJob.standardStats.dclHeaderTiming,
+                                linearRegressionLine(linearRegression(activeJob.standardStats.dclHeaderTiming))
+                            )}
+                        />
+                        <StatisticsCard
+                            title='Total Requests'
+                            slope={linearRegression(activeJob.standardStats.dclRequests).m}
+                            intersect={linearRegression(activeJob.standardStats.dclRequests).b}
+                            rsquared={rSquared(
+                                activeJob.standardStats.dclRequests,
+                                linearRegressionLine(linearRegression(activeJob.standardStats.dclRequests))
+                            )}
+                        />
+                    </Card.Group>
+                </Grid.Column>
+                <Grid.Column>
+                    <Header>Page Complete Regressions</Header>
+                    <Card.Group centered>
+                        <StatisticsCard
+                            title='Data Usage'
+                            slope={linearRegression(activeJob.standardStats.completeDataUsage).m}
+                            intersect={linearRegression(activeJob.standardStats.completeDataUsage).b}
+                            rsquared={rSquared(
+                                activeJob.standardStats.completeDataUsage,
+                                linearRegressionLine(linearRegression(activeJob.standardStats.completeDataUsage))
+                            )}
+                        />
+                        <StatisticsCard
+                            title='Header Timings'
+                            slope={linearRegression(activeJob.standardStats.completeHeaderTiming).m}
+                            intersect={linearRegression(activeJob.standardStats.completeHeaderTiming).b}
+                            rsquared={rSquared(
+                                activeJob.standardStats.completeHeaderTiming,
+                                linearRegressionLine(linearRegression(activeJob.standardStats.completeHeaderTiming))
+                            )}
+                        />
+                        <StatisticsCard
+                            title='Total Requests'
+                            slope={linearRegression(activeJob.standardStats.completeDclRequests).m}
+                            intersect={linearRegression(activeJob.standardStats.completeDclRequests).b}
+                            rsquared={rSquared(
+                                activeJob.standardStats.completeDclRequests,
+                                linearRegressionLine(linearRegression(activeJob.standardStats.completeDclRequests))
+                            )}
+                        />
+                    </Card.Group>
+                </Grid.Column>
+                <Grid.Column>
+                    <Header>Statistics Tool</Header>
+                    <StatisticsTool />
+                </Grid.Column>
+            </Grid>
         </div>
     );
 });
