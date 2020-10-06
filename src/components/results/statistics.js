@@ -14,7 +14,7 @@ export const Statistics = observer(() => {
     return (
         <div className='internal-grid-content-columns'>
             <div style={{ width: '33%', textAlign: 'center' }}>
-                <Header>Dom Content Loaded Regression Analysis</Header>
+                <Header>Dom Content Loaded Regressions</Header>
                 <Card.Group centered>
                     <StatisticsCard
                         title='Data Usage'
@@ -46,7 +46,7 @@ export const Statistics = observer(() => {
                 </Card.Group>
             </div>
             <div style={{ width: '33%', textAlign: 'center' }}>
-                <Header>Page Complete Regression Analysis</Header>
+                <Header>Page Complete Regressions</Header>
                 <Card.Group centered>
                     <StatisticsCard
                         title='Data Usage'

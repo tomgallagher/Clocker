@@ -315,35 +315,37 @@ export class Job {
 
     get standardStats() {
         return {
-            dclDataUsage: this.pages.map(({ dclAverage, dataUsageAverage }) => [dclAverage, dataUsageAverage]),
-            dclHeaderTiming: this.pages.map(({ dclAverage, headerTimingsAverage }) => [
-                dclAverage,
+            dclDataUsage: this.pages.map(({ dataUsageAverage, dclAverage }) => [dataUsageAverage, dclAverage]),
+            dclHeaderTiming: this.pages.map(({ headerTimingsAverage, dclAverage }) => [
                 headerTimingsAverage,
+                dclAverage,
             ]),
             dclRequests: this.pages.map(
                 ({
-                    dclAverage,
                     cssRequestsAverage,
                     fontRequestsAverage,
                     scriptRequestsAverage,
                     imageRequestsAverage,
                     mediaRequestsAverage,
-                }) => [
                     dclAverage,
-                    cssRequestsAverage +
-                        fontRequestsAverage +
-                        scriptRequestsAverage +
-                        imageRequestsAverage +
+                }) => [
+                    [
+                        cssRequestsAverage,
+                        fontRequestsAverage,
+                        scriptRequestsAverage,
+                        imageRequestsAverage,
                         mediaRequestsAverage,
+                    ].reduce((a, b) => a + b, 0),
+                    dclAverage,
                 ]
             ),
-            completeDataUsage: this.pages.map(({ completeAverage, dataUsageAverage }) => [
-                completeAverage,
+            completeDataUsage: this.pages.map(({ dataUsageAverage, completeAverage }) => [
                 dataUsageAverage,
-            ]),
-            completeHeaderTiming: this.pages.map(({ completeAverage, headerTimingsAverage }) => [
                 completeAverage,
+            ]),
+            completeHeaderTiming: this.pages.map(({ headerTimingsAverage, completeAverage }) => [
                 headerTimingsAverage,
+                completeAverage,
             ]),
             completeDclRequests: this.pages.map(
                 ({
@@ -354,12 +356,14 @@ export class Job {
                     imageRequestsAverage,
                     mediaRequestsAverage,
                 }) => [
-                    completeAverage,
-                    cssRequestsAverage +
-                        fontRequestsAverage +
-                        scriptRequestsAverage +
-                        imageRequestsAverage +
+                    [
+                        cssRequestsAverage,
+                        fontRequestsAverage,
+                        scriptRequestsAverage,
+                        imageRequestsAverage,
                         mediaRequestsAverage,
+                    ].reduce((a, b) => a + b, 0),
+                    completeAverage,
                 ]
             ),
         };

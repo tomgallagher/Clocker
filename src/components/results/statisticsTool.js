@@ -41,9 +41,9 @@ export const StatisticsTool = observer(() => {
             let filteredData;
             if (feature.startsWith('minorResources')) {
                 const tag = feature.split('.')[1];
-                filteredData = activeJob.pages.map((page) => [page[value], page.minorResources[tag]]);
+                filteredData = activeJob.pages.map((page) => [page.minorResources[tag], page[value]]);
             } else {
-                filteredData = activeJob.pages.map((page) => [page[value], page[feature]]);
+                filteredData = activeJob.pages.map((page) => [page[feature], page[value]]);
             }
             setData(filteredData);
         }
@@ -55,9 +55,9 @@ export const StatisticsTool = observer(() => {
             let filteredData;
             if (value.startsWith('minorResources')) {
                 const tag = value.split('.')[1];
-                filteredData = activeJob.pages.map((page) => [page[label], page.minorResources[tag]]);
+                filteredData = activeJob.pages.map((page) => [page.minorResources[tag], page[label]]);
             } else {
-                filteredData = activeJob.pages.map((page) => [page[label], page[value]]);
+                filteredData = activeJob.pages.map((page) => [page[value], page[label]]);
             }
             setData(filteredData);
         }
@@ -68,16 +68,16 @@ export const StatisticsTool = observer(() => {
             <Form>
                 <Form.Select
                     fluid
-                    label='Label'
+                    label='Target'
                     options={labelOptions}
-                    placeholder='Label'
+                    placeholder='Target'
                     onChange={handleLabelChange}
                 />
                 <Form.Select
                     fluid
-                    label='Feature'
+                    label='Predictor'
                     options={featureOptions}
-                    placeholder='Feature'
+                    placeholder='Predictor'
                     onChange={handleFeatureChange}
                 />
             </Form>
