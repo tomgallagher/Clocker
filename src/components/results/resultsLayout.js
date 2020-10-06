@@ -7,7 +7,7 @@ export const DefaultResultsLayouts = {
         { i: 'progress', w: 6, h: 1, x: 0, y: 1, isBounded: true },
         { i: 'pageTable', w: 9, h: 5, x: 0, y: 2, isBounded: true },
         { i: 'console', w: 3, h: 5, x: 9, y: 2, isBounded: true },
-        { i: 'metricsTable', w: 9, h: 6, x: 0, y: 7, isBounded: true },
+        { i: 'metricsTable', w: 7, h: 6, x: 0, y: 7, isBounded: true },
         { i: 'loadChart', w: 5, h: 3, x: 7, y: 7, isBounded: true },
         { i: 'requestChart', w: 5, h: 3, x: 7, y: 10, isBounded: true },
         { i: 'statistics', w: 12, h: 3, x: 0, y: 13, isBounded: true },
