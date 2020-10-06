@@ -11,9 +11,9 @@ export const JobsTable = observer(() => {
     const { JobStore } = useStores();
     //then we have the custom row click, which is already passed the row.original by table component
     const handleRowClick = (row) => {
-        //then we find the job using the row data id
-        const jobId = row.id;
-        const jobIndex = JobStore.jobs.findIndex((job) => job.id === jobId);
+        //then we find the job using the row index
+        const jobId = row.unique_id;
+        const jobIndex = JobStore.jobs.findIndex((job) => job.unique_id === jobId);
         runInAction(() => (JobStore.displayIndex = jobIndex));
     };
     const DateCell = ({ value }) => <div>{`${new Date(value).toLocaleString()}`}</div>;
