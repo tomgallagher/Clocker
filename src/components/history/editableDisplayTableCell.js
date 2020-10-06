@@ -7,16 +7,13 @@ import { useStores } from './../../hooks/useStores';
 export const EditableDisplayNameTableCell = observer(({ row }) => {
     //get the job store for data
     const { JobStore } = useStores();
-    //then we find the job using the row data id and update the name property
-    const jobId = row.original.id;
-    const jobIndex = JobStore.jobs.findIndex((job) => job.id === jobId);
     const handleOnChange = (event) => {
         //then we run the name change in action
-        runInAction(() => (JobStore.jobs[jobIndex].name = event.target.value));
+        runInAction(() => (JobStore.jobs[row.index].name = event.target.value));
     };
     return (
         <input
-            value={JobStore.jobs[jobIndex].name}
+            value={JobStore.jobs[row.index].name}
             //we do not want any of the row handler functions firing when we click on an editable cell
             onClick={(event) => event.stopPropagation()}
             //we need to handle the change

@@ -155,7 +155,7 @@ export class JobStore {
         return this.jobs.map((job) => {
             //we have no need for all the fields in the table data
             const partialJob = {
-                id: job.id,
+                unique_id: job.unique_id,
                 name: job.name,
                 updatedtAt: job.updatedtAt,
                 browserName: job.browserName,
