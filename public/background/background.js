@@ -873,7 +873,7 @@ const pageNavigate = (tabID, url) => {
     });
 };
 
-const dismissAlert = (tabID) => {
+const dismissAlert = (tabID, url) => {
     return new Promise((resolve, reject) => {
         chrome.debugger.sendCommand({ tabId: tabID }, 'Page.handleJavaScriptDialog', { accept: true }, function (
             response
@@ -896,14 +896,16 @@ const addAlertHandler = (tabID) => {
             //filter the debugging events for the alert opening event
             if (message == 'Page.javascriptDialogOpening') {
                 //then if we get the event we just need to dismiss the alert
-                dismissAlert(tabID).then(() => {
-                    //report what we have done
-                    console.log(
-                        `Test Suite: Dismissed ${obj.type.toUpperCase()} Dialog at: ${obj.url} with message: ${
-                            obj.message
-                        }`
-                    );
-                });
+                dismissAlert(tabID, obj.url)
+                    .then(() => {
+                        //report what we have done
+                        console.log(
+                            `Test Suite: Dismissed ${obj.type.toUpperCase()} Dialog at: ${obj.url} with message: ${
+                                obj.message
+                            }`
+                        );
+                    })
+                    .catch((error) => console.log(error));
             }
         });
         //then we just resolve once the handler has been added
