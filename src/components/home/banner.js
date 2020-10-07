@@ -4,9 +4,11 @@ import { useHistory } from 'react-router-dom';
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import { useStores } from './../../hooks/useStores';
+import { useMountReport } from './../../hooks/useMountReport';
 import Chromium from './../../images/chromium.webp';
 
 export const Banner = observer(() => {
+    useMountReport({ name: 'Banner' });
     const { JobStore, Settings } = useStores();
     const [showMessage, setShowMessage] = useState(false);
     let history = useHistory();
