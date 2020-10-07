@@ -20,6 +20,6 @@ Report any bugs on the issue tracker.
 
 Fork or clone the repo and run NPM install to install all the relevant packages listed in the __package.json__. 
 
-As the extension is built with React, you will need to run a build each time you make changes to folders in the src or public directories. To automate this process if you are using VS Code, you can install a VS Code extension called [Run On Save](https://marketplace.visualstudio.com/items?itemName=pucelle.run-on-save), for which the settings are in __.vscode/settings.json__. 
+As the extension is built with React, you will need to run a build each time you make changes to files in the src or public directories. To automate this process if you are using VS Code, you can install a VS Code extension called [Run On Save](https://marketplace.visualstudio.com/items?itemName=pucelle.run-on-save), for which the settings are in __.vscode/settings.json__. 
 
 To view changes, reload it unpacked from the Extensions management page in your browser.
