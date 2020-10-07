@@ -14,6 +14,8 @@ Copy the build folder to your local machine and load it unpacked from the Extens
 
 The build folder contains the minified version of all the code in the src directory, plus the public directory.
 
+Report any bugs on the issue tracker.
+
 ## How to work on the project?
 
 Fork or clone the repo and run NPM install to install all the relevant packages listed in the __package.json__. 
