@@ -4,7 +4,9 @@ This project was built to test the performance of Chromium-based browsers, inclu
 
 The aim was to see whether there was any noticeable performance advantages of using any particular browser on desktop, in combination with a number of different content-blocking extensions, including Adblock Plus.
 
-At some point the goal is to the produce relative performance stats for all the Chromium-based browsers and content-blocking extensions.
+The extension has a variety of settings, so you can monitor the performance of target applications with variations of bandwidth and latency, as well as the presence or absence of caching and service workers.
+
+Key metrics and statistical analysis are included for each page and job. Results can be downloaded as CSV files. All page and job data is saved in your browser's local storage.
 
 ## How to use?
 
