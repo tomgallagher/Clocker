@@ -1,4 +1,4 @@
-import { observable, autorun, reaction, decorate, computed, toJS, runInAction } from 'mobx';
+import { observable, autorun, reaction, computed, toJS, runInAction, decorate } from 'mobx';
 import localdb from './../database/database';
 import { SendChromeMessage } from './../utils/chromeFunctions';
 import { createMobxMessageListener } from './../utils/mobxFunctions';
@@ -182,7 +182,7 @@ export class JobStore {
     }
 }
 
-//then add the decorations to make the relevant features of the list observable
+//then add the makeObservable to make the relevant features of the jobstore observable
 decorate(JobStore, {
     jobs: observable,
     activeIndex: observable,
@@ -191,7 +191,6 @@ decorate(JobStore, {
     isLoadError: observable,
     jobTableData: computed,
 });
-
 export class Job {
     constructor(options) {
         //always use the default settings
@@ -444,6 +443,7 @@ export class Job {
     }
 }
 
+//then add the makeObservable to make the relevant features of the job observable
 decorate(Job, {
     name: observable,
     consoleMessages: observable,

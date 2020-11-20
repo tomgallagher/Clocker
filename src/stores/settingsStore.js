@@ -1,4 +1,4 @@
-import { observable, extendObservable, decorate, computed } from 'mobx';
+import { observable, extendObservable, computed, decorate } from 'mobx';
 import psl from 'psl';
 import { getDateString } from './../utils/strings';
 import { autosave } from './autosave';
@@ -74,7 +74,6 @@ export class Settings {
         return `${getDateString()}_${settings}`;
     }
 }
-
 //then add the decorations to make the relevant features of the list observable
 decorate(Settings, {
     //test settings

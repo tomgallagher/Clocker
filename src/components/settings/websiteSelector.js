@@ -1,18 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Label, Image, Button, Form, Segment } from 'semantic-ui-react';
+import { Label, Image, Icon, Button, Form, Segment } from 'semantic-ui-react';
 import { runInAction } from 'mobx';
 import { observer } from 'mobx-react';
 import raw from 'raw.macro';
 import { useStores } from './../../hooks/useStores';
 import { VirtualGrid } from '../lists/virtualGrid';
 
-const euroSource = raw('./../../database/euro_sites.txt')
-    .split('\n')
-    .filter(Boolean);
+const euroSource = raw('./../../database/euro_sites.txt').split('\n').filter(Boolean);
 
-const usSource = raw('./../../database/us_sites.txt')
-    .split('\n')
-    .filter(Boolean);
+const usSource = raw('./../../database/us_sites.txt').split('\n').filter(Boolean);
 
 const urlRegex = /^(?:(?:https?):\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,}))\.?)(?::\d{2,5})?(?:[/?#]\S*)?$/i;
 
@@ -23,14 +19,13 @@ export const WebsiteSelector = observer(() => {
     const [urlInput, setUrlInput] = useState('');
     //we need state for form input errors
     const [urlInputError, setUrlInputError] = useState(false);
+    //function to handle the removal of a url
+    const handleRemoveClick = (urlToRemove) => {
+        runInAction(() => (Settings.websites = Settings.websites.filter((url) => !url.includes(urlToRemove))));
+    };
     //then parse the current parsed websites computed value to display
     const processed = Settings.parsedWebsites.map((parsed) => [
-        <Label
-            className='urlShortName'
-            as='a'
-            target='_blank'
-            content={parsed.name}
-        />,
+        <Label className='urlShortName' as='a' target='_blank' content={parsed.name} />,
         <Image
             avatar
             centered
@@ -42,6 +37,12 @@ export const WebsiteSelector = observer(() => {
             }}
         />,
         parsed.url,
+        <Icon
+            style={{ float: 'right', marginRight: '10px' }}
+            circular
+            name='close'
+            onClick={() => handleRemoveClick(parsed.url)}
+        />,
     ]);
     //we need a reference to the virtual grid so we can reset according changes in processed data
     const gridRef = useRef();
@@ -86,9 +87,7 @@ export const WebsiteSelector = observer(() => {
                 //clear any remaining errors
                 setUrlInputError(false);
                 //then update our array
-                runInAction(
-                    () => (Settings.websites = [...Settings.websites, inputUrl])
-                );
+                runInAction(() => (Settings.websites = [...Settings.websites, inputUrl]));
                 //then clear the url input box when we have a success
                 setUrlInput('');
             } else {
@@ -118,10 +117,7 @@ export const WebsiteSelector = observer(() => {
 
     return (
         <div className='internal-grid-content-single-row'>
-            <Form
-                size='large'
-                className='internal-grid-content-single-row-spread'
-            >
+            <Form size='large' className='internal-grid-content-single-row-spread'>
                 <Form.Field>
                     <label>Test Pages</label>
                     <VirtualGrid gridRef={gridRef} rowData={processed} />
@@ -143,19 +139,11 @@ export const WebsiteSelector = observer(() => {
                         <label>Add Regional Top 100 Sites</label>
                         <Segment textAlign='center'>
                             <Button.Group size='mini' color='black'>
-                                <Button
-                                    type='button'
-                                    name='eu'
-                                    onClick={handleRegionClick}
-                                >
+                                <Button type='button' name='eu' onClick={handleRegionClick}>
                                     Europe
                                 </Button>
                                 <Button.Or />
-                                <Button
-                                    type='button'
-                                    name='us'
-                                    onClick={handleRegionClick}
-                                >
+                                <Button type='button' name='us' onClick={handleRegionClick}>
                                     United States
                                 </Button>
                             </Button.Group>
@@ -165,27 +153,15 @@ export const WebsiteSelector = observer(() => {
                         <label>Manage Test Pages</label>
                         <Segment textAlign='center'>
                             <Button.Group size='mini' color='black'>
-                                <Button
-                                    type='button'
-                                    name='load'
-                                    onClick={handleLoadClick}
-                                >
+                                <Button type='button' name='load' onClick={handleLoadClick}>
                                     Load
                                 </Button>
                                 <Button.Or />
-                                <Button
-                                    type='button'
-                                    name='save'
-                                    onClick={handleSaveClick}
-                                >
+                                <Button type='button' name='save' onClick={handleSaveClick}>
                                     Save
                                 </Button>
                                 <Button.Or />
-                                <Button
-                                    type='button'
-                                    name='clear'
-                                    onClick={handleRegionClick}
-                                >
+                                <Button type='button' name='clear' onClick={handleRegionClick}>
                                     Clear
                                 </Button>
                             </Button.Group>

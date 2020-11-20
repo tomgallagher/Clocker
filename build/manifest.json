@@ -3,7 +3,7 @@
 
     "name": "Clocker",
     "description": "Performance analysis for Chromium-based browsers and content-blocking extensions",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "background": {
         "scripts": [
             "background/rxjs.umd.min.js",
